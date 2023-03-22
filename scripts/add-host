@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -e
+
+WEB_HOST=$1
+
+if [[ -z $WEB_HOST ]]; then
+  echo -e "\033[31m\033[1mWeb Host cannot be empty\033[0m"
+  exit 1
+fi
+
+add_host()
+{
+    if grep -Eq "^\s*\d+\.\d+\.\d+\.\d+\s+${WEB_HOST}$" /etc/hosts; then
+        echo -e "\033[33m\033[1mThere is already an entry for $WEB_HOST in /etc/hosts, skipping.\033[0m"
+
+        return
+    fi
+
+    echo "127.0.0.1       $WEB_HOST" | sudo tee -a /etc/hosts
+}
+
+echo -e "\033[32m\033[1mAdding $WEB_HOST to /etc/hosts\033[0m"
+echo -e "Your system password may be required"
+
+add_host

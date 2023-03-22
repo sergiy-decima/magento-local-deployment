@@ -1,0 +1,10 @@
+*
+!/bin/*
+!/deploy/*
+!/mysql/*
+!/scripts/*
+!/.env.dist
+!/.gitignore
+!/docker-compose.yml
+!/Makefile
+!/README.md
