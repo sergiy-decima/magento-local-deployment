@@ -12,7 +12,7 @@ help:
 	@echo "\n\
 Usage:                         make $(yellow)<COMMANDS>$(normal)\n\
 \n\
-$(green)Magento Local Development$(normal)\n\
+$(green)$(MAKE_TITLE)$(normal)\n\
 \n\
 Build:                         make build\n\
 Up & Flush & Redis:            make up flush redis\n\
@@ -31,16 +31,16 @@ $(yellow)Management Commands:$(normal)\n\
 $(yellow)Magento Commands:$(normal)\n\
   admin-user                   Create admin user\n\
   composer-install             Composer install\n\
-  log                          Show log files\n\
+  log                          Show log info\n\
 \n\
 $(yellow)Commands:$(normal)\n\
   about                        Show environment settings\n\
 "
 
-up: check-env
+up: env
 	docker compose up --detach
 
-down: check-env
+down: env
 	docker compose down
 
 start:
@@ -52,33 +52,32 @@ stop:
 bash:
 	docker compose run --rm deploy bash
 
-check-env:
+env:
 ifeq ($(wildcard .env),)
 	cp .env.dist .env
 	@echo "${red}Please check \".env\" file. Set variables to start and try again if you are sure.${normal}" && false
 endif
 
-build: check-env add-host check-composer-json check-composer-auth check-mysql-config setup-work-dir composer-install mage-install mage-setup-config create-admin-user flush-all up about
+build: env add-host composer-json composer-auth mysql-config mage-work-dir composer-install mage-install db-config admin-user flush-all up about
 
-setup-work-dir:
+mage-work-dir:
 	mkdir -p $(EXTENSIONS_DIR)
 	mkdir -p $(MAGENTO_DIR)/bin
 	(test -f $(MAGENTO_DIR)/auth.json && test -f deploy/auth.json) || cp deploy/auth.json $(MAGENTO_DIR)
 	test -f $(MAGENTO_DIR)/composer.json || cp deploy/composer.json $(MAGENTO_DIR)
 	test -f $(MAGENTO_DIR)/bin/n98 || cp deploy/bin/n98 $(MAGENTO_DIR)/bin
 
-check-composer-json:
+composer-json:
 	test -f deploy/composer.json || test -f $(MAGENTO_DIR)/composer.json || cp deploy/composer.json.sample deploy/composer.json
 
-check-composer-auth:
+composer-auth:
 	@test -f deploy/auth.json || test -f $(MAGENTO_DIR)/auth.json || (cp deploy/auth.json.sample deploy/auth.json \
 && echo "\n${red}Please check \"deploy/auth.json\" file. Set composer credentials and try again.${normal}\n" \
 && false)
 
-check-mysql-config:
-	@test -f mysql/mariadb.conf.d/my.cnf || (cp mysql/mariadb.conf.d/my.cnf.sample mysql/mariadb.conf.d/my.cnf \
-&& echo "\n${red}Please check \"mysql/mariadb.conf.d/my.cnf\" file. Set database settings and try again.${normal}\n" \
-&& false)
+mysql-config:
+	test -f mysql/mariadb.conf.d/my.cnf || echo "[client]\n\n\n[mysqld]" > mysql/mariadb.conf.d/my.cnf
+	@echo "$(green)MySql configuration file \"mysql/mariadb.conf.d/my.cnf\" exists.$(normal)"
 
 composer-install:
 	docker run --rm -e "MAGENTO_ROOT=/app" -v $(shell pwd)/$(MAGENTO_DIR):/app -v $(shell pwd)/$(EXTENSIONS_DIR):/extensions -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) bash -c "composer config repositories.dev-extensions path ../extensions/\* && composer install --ansi --no-interaction"
@@ -136,7 +135,7 @@ mage-install:
 add-host:
 	scripts/add-host $(WEB_HOST)
 
-mage-setup-config:
+db-config:
 	docker compose run --rm deploy bash -c "\
     bin/magento config:set admin/security/use_form_key 0 \
     && bin/magento config:set admin/security/session_lifetime 7776000 \
@@ -163,7 +162,7 @@ db:
 redis:
 	docker compose exec redis redis-cli
 
-create-admin-user:
+admin-user:
 	docker compose run --rm deploy bin/n98 admin:user:create \
     --admin-user "$(MAGENTO_ADMIN_USERNAME)" \
     --admin-password "$(MAGENTO_ADMIN_PASSWORD)" \
@@ -171,8 +170,6 @@ create-admin-user:
     --admin-firstname "$(MAGENTO_ADMIN_FIRSTNAME)" \
     --admin-lastname "$(MAGENTO_ADMIN_LASTNAME)" \
     --ansi
-
-admin-user: create-admin-user
 
 log:
 	tail -f $(MAGENTO_DIR)/var/log/*.log
