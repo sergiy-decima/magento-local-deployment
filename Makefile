@@ -64,24 +64,26 @@ build: env add-host composer-json composer-auth mysql-config mage-work-dir compo
 mage-work-dir:
 	mkdir -p $(MAGENTO_DIR)/bin
 	(test -f $(MAGENTO_DIR)/auth.json && test -f deploy/auth.json) || cp deploy/auth.json $(MAGENTO_DIR)
-	test -f $(MAGENTO_DIR)/composer.json || cp deploy/composer.json $(MAGENTO_DIR)
+	test -f $(MAGENTO_DIR)/composer.json || (test -f deploy/composer.json && cp deploy/composer.json $(MAGENTO_DIR)/composer.json)
+	test -f $(MAGENTO_DIR)/composer.json || cp deploy/composer.json.sample $(MAGENTO_DIR)/composer.json
 	test -f $(MAGENTO_DIR)/bin/n98 || cp deploy/bin/n98 $(MAGENTO_DIR)/bin
+	test -f $(MAGENTO_DIR)/phpunit.xml.dist || cp deploy/phpunit.xml.dist $(MAGENTO_DIR)/phpunit.xml.dist
 
 extensions: mage-work-dir
-	mkdir -p $(MAGENTO_DIR)/$(EXTENSIONS_DIR)
-	test -f $(MAGENTO_DIR)/$(EXTENSIONS_DIR)/.gitignore || echo "*" > $(MAGENTO_DIR)/$(EXTENSIONS_DIR)/.gitignore
-	test -f $(MAGENTO_DIR)/.git/config && cd $(MAGENTO_DIR) && git add -f $(EXTENSIONS_DIR)/.gitignore
-	test -f $(MAGENTO_DIR)/phpunit.xml.dist || cp deploy/phpunit.xml.dist $(MAGENTO_DIR)/phpunit.xml.dist
-	docker run --rm -e "MAGENTO_ROOT=/app" -v $(shell pwd)/$(MAGENTO_DIR):/app -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer config repositories.dev-extensions path $(EXTENSIONS_DIR)/\*
+	mkdir -p $(EXTENSIONS_DIR)
+	docker run --rm -e "MAGENTO_ROOT=/app" -v $(shell pwd)/$(MAGENTO_DIR):/app -v $(shell pwd)/$(EXTENSIONS_DIR):/$(EXTENSIONS_DIR) -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer config repositories.dev-extensions path ../$(EXTENSIONS_DIR)/\*
 	@echo "\n\
-$(green)Directory \"$(MAGENTO_DIR)/$(EXTENSIONS_DIR)\" was added to \"composer.json\".\n\
-If you use git, don't forget to add the directory to your the version control system:\n\
-$(yellow)> git add -f $(EXTENSIONS_DIR)/.gitignore\n\n\
-$(green)Otherwise, delete the settings of \"composer.json\".$(normal)\n\
+$(green)Please use \"$(EXTENSIONS_DIR)/*\" folder to development extensions, for example:$(normal)\n\
+── extensions\n\
+  ├── my_extension\n\
+  ├── my_extension2\n\
+\n\
+$(green)then, add it to composer:$(normal)\n\
+> composer require example/my-extension:1.0.1\n\
 "
 
 composer-json:
-	test -f deploy/composer.json || test -f $(MAGENTO_DIR)/composer.json || cp deploy/composer.json.sample deploy/composer.json
+	#test -f deploy/composer.json || test -f $(MAGENTO_DIR)/composer.json || cp deploy/composer.json.sample deploy/composer.json
 
 composer-auth:
 	@test -f deploy/auth.json || test -f $(MAGENTO_DIR)/auth.json || (cp deploy/auth.json.sample deploy/auth.json \
@@ -93,7 +95,7 @@ mysql-config:
 	@echo "$(green)MySql configuration file \"mysql/mariadb.conf.d/my.cnf\" exists.$(normal)"
 
 composer-install:
-	docker run --rm -e "MAGENTO_ROOT=/app" -v $(shell pwd)/$(MAGENTO_DIR):/app -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer install --no-interaction --ansi
+	docker run --rm -e "MAGENTO_ROOT=/app" -v $(shell pwd)/$(MAGENTO_DIR):/app -v $(shell pwd)/$(EXTENSIONS_DIR):/$(EXTENSIONS_DIR) -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer install --no-interaction --ansi
 
 mage-install:
 	docker compose run --rm deploy bin/magento setup:config:set \
@@ -186,6 +188,13 @@ admin-user:
 
 log:
 	tail -f $(MAGENTO_DIR)/var/log/*.log
+
+test:
+ifneq ($(wildcard scripts/run-test),)
+	@bash scripts/run-test
+else
+	@echo "$(red)scripts/run-test not found$(normal)"
+endif
 
 about:
 	@echo "\n\
