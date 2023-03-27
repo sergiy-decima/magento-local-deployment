@@ -36,6 +36,7 @@ $(yellow)Magento Commands:$(normal)\n\
 $(yellow)Commands:$(normal)\n\
   about                        Show environment settings\n\
   extensions                   Init extension development\n\
+  test                         Run custom script\n\
 "
 
 up: env
@@ -193,7 +194,7 @@ test:
 ifneq ($(wildcard scripts/run-test),)
 	@bash scripts/run-test
 else
-	@echo "$(red)scripts/run-test not found$(normal)"
+	@echo "$(red)scripts/run-test not found. Please check file.$(normal)"
 endif
 
 about:
