@@ -31,7 +31,7 @@ $(yellow)Management Commands:$(normal)\n\
 $(yellow)Magento Commands:$(normal)\n\
   admin-user                   Create admin user\n\
   composer-install             Composer install\n\
-  log                          Show log info\n\
+  log                          Log info tracking\n\
 \n\
 $(yellow)Commands:$(normal)\n\
   about                        Show environment settings\n\
@@ -141,8 +141,8 @@ mage-install:
     --disable-modules=$(MAGENTO_DISABLE_MODULES) \
     --amqp-host=$(RABBITMQ_HOST) \
     --amqp-port=$(RABBITMQ_PORT) \
-    --amqp-user=$(RABBITMQ_DEFAULT_USER) \
-    --amqp-password=$(RABBITMQ_DEFAULT_PASS) \
+    --amqp-user=$(RABBITMQ_USER) \
+    --amqp-password=$(RABBITMQ_PASS) \
     --amqp-virtualhost=/
 
 add-host:
@@ -192,6 +192,6 @@ about:
 🌎 Backend:       https://$(WEB_HOST)/$(MAGENTO_BACKEND_FRONTNAME)  {user: $(MAGENTO_ADMIN_USERNAME), pass: $(MAGENTO_ADMIN_PASSWORD)}\n\
 📧 Email:         http://$(WEB_HOST):$(EXPOSE_MAILHOG_WEB_PORT)\n\
 🩸 Redis:         http://$(WEB_HOST):$(EXPOSE_REDIS_COMMANDER_PORT)\n\
-🐰 RabbitMQ:      http://$(WEB_HOST):$(EXPOSE_RABBITMQ_PORT)   {user: $(RABBITMQ_DEFAULT_USER), pass: $(RABBITMQ_DEFAULT_PASS)}\n\
+🐰 RabbitMQ:      http://$(WEB_HOST):$(EXPOSE_RABBITMQ_PORT)   {user: $(RABBITMQ_USER), pass: $(RABBITMQ_PASS)}\n\
 📦 Database:      mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@localhost:$(MYSQL_EXPOSED_PORT)\n\
 "
