@@ -67,7 +67,7 @@ services:
     image: ${DC_IMAGE_PHP_FPM}
     extends: generic
     volumes:
-      - './${MAGENTO_DIR}:/app:delegated'
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
       - './${EXTENSIONS_DIR}:/extensions:delegated'
       - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
     networks:
@@ -82,7 +82,7 @@ services:
     image: ${DC_IMAGE_NGINX}
     extends: generic
     volumes:
-      - './${MAGENTO_DIR}:/app:delegated'
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
       - './${EXTENSIONS_DIR}:/extensions:delegated'
       - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
     environment:
@@ -120,7 +120,7 @@ services:
     image: ${DC_IMAGE_PHP_FPM}
     extends: generic
     volumes:
-      - './${MAGENTO_DIR}:/app:delegated'
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
       - './${EXTENSIONS_DIR}:/extensions:delegated'
       - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
     environment:
@@ -135,8 +135,6 @@ services:
   generic:
     hostname: ${DC_HOSTNAME_GENERIC}
     image: ${DC_IMAGE_PHP_CLI}
-    env_file:
-      - ./.docker/config.env
     environment:
       - MAGENTO_RUN_MODE=${MAGENTO_RUN_MODE}
       - 'PHP_EXTENSIONS=bcmath bz2 calendar exif gd gettext intl mysqli pcntl pdo_mysql soap sockets sysvmsg sysvsem sysvshm opcache zip xsl sodium'
@@ -146,7 +144,7 @@ services:
     image: ${DC_IMAGE_PHP_CLI}
     extends: generic
     volumes:
-      - './${MAGENTO_DIR}:/app:delegated'
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
       - './${EXTENSIONS_DIR}:/extensions:delegated'
       - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
     networks:
@@ -170,7 +168,7 @@ services:
       - 'PHP_EXTENSIONS=bcmath bz2 calendar exif gd gettext intl mysqli pcntl pdo_mysql soap sockets sysvmsg sysvsem sysvshm opcache zip xsl sodium xdebug'
       - XDEBUG_MODE=coverage
     volumes:
-      - './${MAGENTO_DIR}:/app:delegated'
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
       - './${EXTENSIONS_DIR}:/extensions:delegated'
       - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
       - ~/.composer/cache:/composer/cache
