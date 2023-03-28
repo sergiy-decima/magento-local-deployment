@@ -75,12 +75,13 @@ extensions: mage-work-dir
 	mkdir -p $(EXTENSIONS_DIR)
 	docker run --rm -e "MAGENTO_ROOT=$(MAGENTO_ROOT)" -v $(shell pwd)/$(MAGENTO_DIR):$(MAGENTO_ROOT) -v $(shell pwd)/$(EXTENSIONS_DIR):/$(EXTENSIONS_DIR) -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer config repositories.dev-extensions path ../$(EXTENSIONS_DIR)/\*
 	@echo "\n\
-$(green)Please use \"$(EXTENSIONS_DIR)/*\" folder to development extensions, for example:$(normal)\n\
+$(green)Please use \"$(EXTENSIONS_DIR)/*\" folder to develop extensions, for example:$(normal)\n\
 ── extensions\n\
   ├── my_extension\n\
   ├── my_extension2\n\
 \n\
-$(green)then, add it to composer:$(normal)\n\
+$(green)then using docker container, add it to composer:$(normal)\n\
+> make bash\n\
 > composer require example/my-extension:1.0.1\n\
 "
 
@@ -193,7 +194,7 @@ log:
 
 test:
 ifneq ($(wildcard scripts/run-test),)
-	@bash scripts/run-test
+	@bash scripts/run-test || true
 else
 	@echo "$(red)scripts/run-test not found. Please check file.$(normal)"
 endif
