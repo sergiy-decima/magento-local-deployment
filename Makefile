@@ -51,7 +51,7 @@ start:
 stop:
 	docker compose stop
 
-bash:
+bash: env
 	docker compose run --rm deploy bash
 
 env:
@@ -59,6 +59,7 @@ ifeq ($(wildcard .env),)
 	cp .env.dist .env
 	@echo "${red}Please check \".env\" file. Set variables to start and try again if you are sure.${normal}" && false
 endif
+	@mkdir -p $(DC_SHARING_DIRECTORY)
 
 build: env add-host composer-json composer-auth mysql-config mage-work-dir composer-install mage-install db-config admin-user flush-all up about
 
