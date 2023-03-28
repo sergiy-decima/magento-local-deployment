@@ -73,7 +73,7 @@ mage-work-dir:
 
 extensions: mage-work-dir
 	mkdir -p $(EXTENSIONS_DIR)
-	docker run --rm -e "MAGENTO_ROOT=/app" -v $(shell pwd)/$(MAGENTO_DIR):/app -v $(shell pwd)/$(EXTENSIONS_DIR):/$(EXTENSIONS_DIR) -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer config repositories.dev-extensions path ../$(EXTENSIONS_DIR)/\*
+	docker run --rm -e "MAGENTO_ROOT=$(MAGENTO_ROOT)" -v $(shell pwd)/$(MAGENTO_DIR):$(MAGENTO_ROOT) -v $(shell pwd)/$(EXTENSIONS_DIR):/$(EXTENSIONS_DIR) -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer config repositories.dev-extensions path ../$(EXTENSIONS_DIR)/\*
 	@echo "\n\
 $(green)Please use \"$(EXTENSIONS_DIR)/*\" folder to development extensions, for example:$(normal)\n\
 ── extensions\n\
@@ -97,7 +97,7 @@ mysql-config:
 	@echo "$(green)MySql configuration file \"mysql/mariadb.conf.d/my.cnf\" exists.$(normal)"
 
 composer-install:
-	docker run --rm -e "MAGENTO_ROOT=/app" -v $(shell pwd)/$(MAGENTO_DIR):/app -v $(shell pwd)/$(EXTENSIONS_DIR):/$(EXTENSIONS_DIR) -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer install --no-interaction --ansi
+	docker run --rm -e "MAGENTO_ROOT=$(MAGENTO_ROOT)" -v $(shell pwd)/$(MAGENTO_DIR):$(MAGENTO_ROOT) -v $(shell pwd)/$(EXTENSIONS_DIR):/$(EXTENSIONS_DIR) -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer install --no-interaction --ansi
 
 mage-install:
 	docker compose run --rm deploy bin/magento setup:config:set \
