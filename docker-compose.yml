@@ -135,6 +135,7 @@ services:
   generic:
     hostname: ${DC_HOSTNAME_GENERIC}
     image: ${DC_IMAGE_PHP_CLI}
+    env_file: ./.env
     environment:
       - MAGENTO_RUN_MODE=${MAGENTO_RUN_MODE}
       - 'PHP_EXTENSIONS=bcmath bz2 calendar exif gd gettext intl mysqli pcntl pdo_mysql soap sockets sysvmsg sysvsem sysvshm opcache zip xsl sodium'
