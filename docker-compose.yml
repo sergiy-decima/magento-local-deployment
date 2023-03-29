@@ -1,0 +1,230 @@
+version: '3.9'
+services:
+  db:
+    hostname: ${DC_HOSTNAME_DB}
+    image: ${DC_IMAGE_MYSQL}
+    shm_size: 2gb
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - '${MYSQL_EXPOSED_PORT}:3306'
+    volumes:
+      - 'db-data:/var/lib/mysql'
+      - './mysql/mariadb.conf.d:/etc/mysql/mariadb.conf.d'
+      - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
+    healthcheck:
+      test: 'mysqladmin ping -h localhost -p${MYSQL_PASSWORD}'
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_DB}
+  redis:
+    hostname: ${DC_HOSTNAME_REDIS}
+    image: ${DC_IMAGE_REDIS}
+    ports:
+      - 6379
+    sysctls:
+      net.core.somaxconn: 1024
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
+    healthcheck:
+      test: 'redis-cli ping || exit 1'
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_REDIS}
+  opensearch:
+    hostname: ${DC_HOSTNAME_OPENSEARCH}
+    image: ${DC_IMAGE_OPENSEARCH}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    environment:
+      - cluster.name=docker-cluster
+      - discovery.type=single-node
+      - discovery.seed_hosts=opensearch
+      - bootstrap.memory_lock=true
+      - DISABLE_SECURITY_PLUGIN=true
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_OPENSEARCH}
+  fpm:
+    hostname: ${DC_HOSTNAME_FPM}
+    image: ${DC_IMAGE_PHP_FPM}
+    extends: generic
+    volumes:
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
+      - './${EXTENSIONS_DIR}:/extensions:delegated'
+      - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_FPM}
+    depends_on:
+      db:
+        condition: service_healthy
+  web:
+    hostname: ${DC_HOSTNAME_WEB}
+    image: ${DC_IMAGE_NGINX}
+    extends: generic
+    volumes:
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
+      - './${EXTENSIONS_DIR}:/extensions:delegated'
+      - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
+    environment:
+      - WITH_XDEBUG=1
+      - NGINX_WORKER_PROCESSES=1
+      - NGINX_WORKER_CONNECTIONS=1024
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_WEB}
+    depends_on:
+      fpm:
+        condition: service_started
+  tls:
+    hostname: ${DC_HOSTNAME_TLS}
+    image: ${DC_IMAGE_NGINX}
+    extends: generic
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_TLS}
+    environment:
+      - NGINX_WORKER_PROCESSES=1
+      - NGINX_WORKER_CONNECTIONS=1024
+      - UPSTREAM_HOST=web
+      - UPSTREAM_PORT=8080
+    ports:
+      - '80:80'
+      - '443:443'
+    depends_on:
+      web:
+        condition: service_started
+  fpm_xdebug:
+    hostname: ${DC_HOSTNAME_FPM_XDEBUG}
+    image: ${DC_IMAGE_PHP_FPM}
+    extends: generic
+    volumes:
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
+      - './${EXTENSIONS_DIR}:/extensions:delegated'
+      - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
+    environment:
+      - 'PHP_EXTENSIONS=bcmath bz2 calendar exif gd gettext intl mysqli pcntl pdo_mysql soap sockets sysvmsg sysvsem sysvshm opcache zip xsl sodium xdebug'
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_FPM_XDEBUG}
+    depends_on:
+      db:
+        condition: service_started
+  generic:
+    hostname: ${DC_HOSTNAME_GENERIC}
+    image: ${DC_IMAGE_PHP_CLI}
+    environment:
+      - MAGENTO_RUN_MODE=${MAGENTO_RUN_MODE}
+      - 'PHP_EXTENSIONS=bcmath bz2 calendar exif gd gettext intl mysqli pcntl pdo_mysql soap sockets sysvmsg sysvsem sysvshm opcache zip xsl sodium'
+      - 'SENDMAIL_PATH=/usr/local/bin/mhsendmail --smtp-addr=mailhog:1025'
+  build:
+    hostname: ${DC_HOSTNAME_BUILD}
+    image: ${DC_IMAGE_PHP_CLI}
+    extends: generic
+    volumes:
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
+      - './${EXTENSIONS_DIR}:/extensions:delegated'
+      - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
+    networks:
+      magento-build:
+        aliases:
+          - ${DC_HOSTNAME_BUILD}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+  deploy:
+    hostname: ${DC_HOSTNAME_DEPLOY}
+    image: ${DC_IMAGE_PHP_CLI}
+    extends: generic
+    environment:
+      - 'PHP_EXTENSIONS=bcmath bz2 calendar exif gd gettext intl mysqli pcntl pdo_mysql soap sockets sysvmsg sysvsem sysvshm opcache zip xsl sodium xdebug'
+      - XDEBUG_MODE=coverage
+    volumes:
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
+      - './${EXTENSIONS_DIR}:/extensions:delegated'
+      - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
+      - ~/.composer/cache:/composer/cache
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_DEPLOY}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+  rabbitmq:
+    hostname: ${DC_HOSTNAME_RABBITMQ}
+    image: ${DC_IMAGE_RABBITMQ}
+    ports:
+      - ${EXPOSE_RABBITMQ_PORT}:15672
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_RABBITMQ}
+  mailhog:
+    hostname: ${DC_HOSTNAME_MAILHOG}
+    image: ${DC_IMAGE_MAILHOG}
+    ports:
+      - '${EXPOSE_MAILHOG_SMTP_PORT}:1025'
+      - '${EXPOSE_MAILHOG_WEB_PORT}:8025'
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_MAILHOG}
+
+  redis-commander:
+    hostname: ${DC_HOSTNAME_REDIS_COMMANDER}
+    image: ${DC_IMAGE_REDIS_COMMANDER}
+    restart: always
+    environment:
+      - REDIS_HOSTS=${DC_HOSTNAME_REDIS}
+    ports:
+      - '${EXPOSE_REDIS_COMMANDER_PORT}:8081'
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_REDIS_COMMANDER}
+    depends_on:
+      redis:
+        condition: service_started
+
+volumes:
+  db-data: {  }
+networks:
+  magento:
+    driver: bridge
+  magento-build:
+    driver: bridge

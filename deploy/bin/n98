@@ -1,0 +1,10 @@
+#!/bin/bash
+
+N98_FILE=n98-magerun2.phar
+
+if [ ! -f "$N98_FILE" ]
+then
+  curl -O https://files.magerun.net/n98-magerun2.phar
+fi
+
+php "$N98_FILE" --skip-root-check $@
