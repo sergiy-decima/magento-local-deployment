@@ -2,7 +2,7 @@
 
 Magento Local Deployment is a tool that lets developers build complex Web Applications on top of Magento 2 stores.
 
-### First Commands
+# First Commands
 
 ```shell
 # Print Help
@@ -19,7 +19,7 @@ make build
 make about
 ```
 
-### Configuration Files
+# Configuration Files
 
 .env - base settings of local environment
 
@@ -35,7 +35,7 @@ extensions - folder to develop extensions for Magento 2
 
 mnt - shared folder between containers
 
-### How develop extensions
+# How develop extensions
 
 Run command to configure composer for your "extensions" folder
 ```shell
