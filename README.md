@@ -27,13 +27,13 @@ deploy/auth.json - composer repository credentials
 
 deploy/composer.json - building application & dependencies
 
-mysql/mariadb.conf.d - mysql settings
-
-scripts/run-test - your custom script, ```make test```
-
 extensions - folder to develop extensions for Magento 2
 
 mnt - shared folder between containers
+
+mysql/mariadb.conf.d - mysql settings
+
+scripts/run-test - your custom script, ```make test```
 
 # How develop extensions
 
