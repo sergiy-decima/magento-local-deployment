@@ -21,19 +21,19 @@ make about
 
 # Configuration Files
 
-.env - base settings of local environment
+**.env** - base settings of local environment
 
-deploy/auth.json - composer repository credentials
+**deploy/auth.json** - composer repository credentials
 
-deploy/composer.json - building application & dependencies
+**deploy/composer.json** - building application & dependencies
 
-extensions - folder to develop extensions for Magento 2
+**extensions** - folder to develop extensions for Magento 2
 
-mnt - shared folder between containers
+**mnt** - shared folder between containers
 
-mysql/mariadb.conf.d - mysql settings
+**mysql/mariadb.conf.d** - mysql settings
 
-scripts/run-test - your custom script, ```make test```
+**scripts/run-test** - your custom script, ```make test```
 
 # How develop extensions
 
