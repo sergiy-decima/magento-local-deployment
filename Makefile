@@ -98,7 +98,7 @@ mysql-config:
 	@echo "$(green)MySql configuration file \"mysql/mariadb.conf.d/my.cnf\" exists.$(normal)"
 
 composer-install:
-	docker run --rm -e "MAGENTO_ROOT=$(MAGENTO_ROOT)" -v $(shell pwd)/$(MAGENTO_DIR):$(MAGENTO_ROOT) -v $(shell pwd)/$(EXTENSIONS_DIR):/$(EXTENSIONS_DIR) -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer install --no-interaction --ansi
+	docker run --rm -e "MAGENTO_ROOT=$(MAGENTO_ROOT)" -v $(shell pwd)/$(MAGENTO_DIR):$(MAGENTO_ROOT) -v $(shell pwd)/$(EXTENSIONS_DIR):/$(EXTENSIONS_DIR) -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer install --no-interaction --ansi --prefer-dist --no-suggest
 
 mage-install:
 	docker compose run --rm deploy bin/magento setup:config:set \
