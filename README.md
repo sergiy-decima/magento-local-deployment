@@ -29,7 +29,7 @@ make about
 
 **extensions** - folder to develop extensions for Magento 2
 
-**mnt** - shared folder between containers
+**mnt** - shared folder between host machine and containers
 
 **mysql/mariadb.conf.d** - mysql settings
 

@@ -1,67 +1,36 @@
 version: '3.9'
 services:
-  db:
-    hostname: ${DC_HOSTNAME_DB}
-    image: ${DC_IMAGE_MYSQL}
-    shm_size: 2gb
+  generic:
+    hostname: ${DC_HOSTNAME_GENERIC}
+    image: ${DC_IMAGE_PHP_CLI}
+    env_file: ${DC_ENV_FILE_PATH}
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-    ports:
-      - '${MYSQL_EXPOSED_PORT}:3306'
+      - 'MAGENTO_ROOT=${MAGENTO_ROOT}'
+      - 'MAGENTO_RUN_MODE=${MAGENTO_RUN_MODE}'
+      - 'PHP_EXTENSIONS=${PHP_EXTENSIONS}'
+      - 'SENDMAIL_PATH=/usr/local/bin/mhsendmail --smtp-addr=mailhog:1025'
+  deploy:
+    hostname: ${DC_HOSTNAME_DEPLOY}
+    image: ${DC_IMAGE_PHP_CLI}
+    extends: generic
     volumes:
-      - 'db-data:/var/lib/mysql'
-      - './mysql/mariadb.conf.d:/etc/mysql/mariadb.conf.d'
-      - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
-    healthcheck:
-      test: 'mysqladmin ping -h localhost -p${MYSQL_PASSWORD}'
-      interval: 30s
-      timeout: 30s
-      retries: 3
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
+      - './${EXTENSIONS_DIR}:/extensions:delegated'
+      - './${SHARED_DIR}:/mnt:rw,delegated'
+      - '~/.composer/cache:/composer/cache'
     networks:
       magento:
         aliases:
-          - ${DC_HOSTNAME_DB}
-  redis:
-    hostname: ${DC_HOSTNAME_REDIS}
-    image: ${DC_IMAGE_REDIS}
-    ports:
-      - 6379
-    sysctls:
-      net.core.somaxconn: 1024
-    ulimits:
-      nproc: 65535
-      nofile:
-        soft: 20000
-        hard: 40000
-    healthcheck:
-      test: 'redis-cli ping || exit 1'
-      interval: 30s
-      timeout: 30s
-      retries: 3
-    networks:
-      magento:
-        aliases:
-          - ${DC_HOSTNAME_REDIS}
-  opensearch:
-    hostname: ${DC_HOSTNAME_OPENSEARCH}
-    image: ${DC_IMAGE_OPENSEARCH}
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    environment:
-      - cluster.name=docker-cluster
-      - discovery.type=single-node
-      - discovery.seed_hosts=opensearch
-      - bootstrap.memory_lock=true
-      - DISABLE_SECURITY_PLUGIN=true
-    networks:
-      magento:
-        aliases:
-          - ${DC_HOSTNAME_OPENSEARCH}
+          - ${DC_HOSTNAME_DEPLOY}
+    depends_on:
+      db:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      redis:
+        condition: service_healthy
   fpm:
     hostname: ${DC_HOSTNAME_FPM}
     image: ${DC_IMAGE_PHP_FPM}
@@ -69,7 +38,7 @@ services:
     volumes:
       - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
       - './${EXTENSIONS_DIR}:/extensions:delegated'
-      - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
+      - './${SHARED_DIR}:/mnt:rw,delegated'
     networks:
       magento:
         aliases:
@@ -77,6 +46,23 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  fpm_xdebug:
+    hostname: ${DC_HOSTNAME_FPM_XDEBUG}
+    image: ${DC_IMAGE_PHP_FPM}
+    extends: generic
+    volumes:
+      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
+      - './${EXTENSIONS_DIR}:/extensions:delegated'
+      - './${SHARED_DIR}:/mnt:rw,delegated'
+    environment:
+      - 'PHP_EXTENSIONS=${PHP_EXTENSIONS} xdebug'
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_FPM_XDEBUG}
+    depends_on:
+      db:
+        condition: service_started
   web:
     hostname: ${DC_HOSTNAME_WEB}
     image: ${DC_IMAGE_NGINX}
@@ -84,7 +70,7 @@ services:
     volumes:
       - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
       - './${EXTENSIONS_DIR}:/extensions:delegated'
-      - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
+      - './${SHARED_DIR}:/mnt:rw,delegated'
     environment:
       - WITH_XDEBUG=1
       - NGINX_WORKER_PROCESSES=1
@@ -115,53 +101,30 @@ services:
     depends_on:
       web:
         condition: service_started
-  fpm_xdebug:
-    hostname: ${DC_HOSTNAME_FPM_XDEBUG}
-    image: ${DC_IMAGE_PHP_FPM}
-    extends: generic
-    volumes:
-      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
-      - './${EXTENSIONS_DIR}:/extensions:delegated'
-      - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
+  db:
+    hostname: ${DC_HOSTNAME_DB}
+    image: ${DC_IMAGE_MYSQL}
+    shm_size: 2gb
     environment:
-      - 'PHP_EXTENSIONS=${PHP_EXTENSIONS} xdebug'
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - '${MYSQL_EXPOSED_PORT}:3306'
+    volumes:
+      - 'db-data:/var/lib/mysql'
+      - './mysql/mariadb.conf.d:/etc/mysql/mariadb.conf.d'
+      - './${SHARED_DIR}:/mnt:rw,delegated'
+    healthcheck:
+      test: 'mysqladmin ping -h localhost -p${MYSQL_PASSWORD}'
+      interval: 30s
+      timeout: 30s
+      retries: 3
     networks:
       magento:
         aliases:
-          - ${DC_HOSTNAME_FPM_XDEBUG}
-    depends_on:
-      db:
-        condition: service_started
-  generic:
-    hostname: ${DC_HOSTNAME_GENERIC}
-    image: ${DC_IMAGE_PHP_CLI}
-    env_file: ${ENV_FILE_PATH}
-    environment:
-      - 'MAGENTO_RUN_MODE=${MAGENTO_RUN_MODE}'
-      - 'PHP_EXTENSIONS=${PHP_EXTENSIONS}'
-      - 'SENDMAIL_PATH=/usr/local/bin/mhsendmail --smtp-addr=mailhog:1025'
-  deploy:
-    hostname: ${DC_HOSTNAME_DEPLOY}
-    image: ${DC_IMAGE_PHP_CLI}
-    extends: generic
-    volumes:
-      - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
-      - './${EXTENSIONS_DIR}:/extensions:delegated'
-      - './${DC_SHARING_DIRECTORY}:/mnt:rw,delegated'
-      - '~/.composer/cache:/composer/cache'
-    networks:
-      magento:
-        aliases:
-          - ${DC_HOSTNAME_DEPLOY}
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      opensearch:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_started
+          - ${DC_HOSTNAME_DB}
   rabbitmq:
     hostname: ${DC_HOSTNAME_RABBITMQ}
     image: ${DC_IMAGE_RABBITMQ}
@@ -181,7 +144,44 @@ services:
       magento:
         aliases:
           - ${DC_HOSTNAME_MAILHOG}
-
+  opensearch:
+    hostname: ${DC_HOSTNAME_OPENSEARCH}
+    image: ${DC_IMAGE_OPENSEARCH}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    environment:
+      - cluster.name=docker-cluster
+      - discovery.type=single-node
+      - discovery.seed_hosts=opensearch
+      - bootstrap.memory_lock=true
+      - DISABLE_SECURITY_PLUGIN=true
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_OPENSEARCH}
+  redis:
+    hostname: ${DC_HOSTNAME_REDIS}
+    image: ${DC_IMAGE_REDIS}
+    ports:
+      - 6379
+    sysctls:
+      net.core.somaxconn: 1024
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
+    healthcheck:
+      test: 'redis-cli ping || exit 1'
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_REDIS}
   redis-commander:
     hostname: ${DC_HOSTNAME_REDIS_COMMANDER}
     image: ${DC_IMAGE_REDIS_COMMANDER}

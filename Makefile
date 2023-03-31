@@ -12,7 +12,7 @@ help:
 	@echo "\n\
 Usage:                         make $(yellow)<COMMANDS>$(normal)\n\
 \n\
-$(green)$(MAKE_TITLE)$(normal)\n\
+$(green)$(MAKE_HELP_TITLE)$(normal)\n\
 \n\
 Build:                         make build\n\
 Up & Flush & Redis:            make up flush redis\n\
@@ -59,7 +59,7 @@ ifeq ($(wildcard .env),)
 	cp .env.dist .env
 	@echo "${red}Please check \".env\" file. Set variables to start and try again if you are sure.${normal}" && false
 endif
-	@mkdir -p $(DC_SHARING_DIRECTORY)
+	@mkdir -p $(SHARED_DIR)
 
 build: env add-host composer-json composer-auth mysql-config mage-work-dir composer-install mage-install db-config admin-user flush-all up about
 
