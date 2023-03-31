@@ -1,10 +1,12 @@
 *
+!/.editorconfig
+!/.env.dist
+!/.gitignore
 !/bin/*
 !/deploy/*
 !/mysql/*
 !/scripts/*
-!/.env.dist
-!/.gitignore
+!/config.env
 !/docker-compose.yml
 !/Makefile
 !/README.md
