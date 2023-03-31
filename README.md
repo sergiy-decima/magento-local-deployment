@@ -85,7 +85,7 @@ docker compose run --rm -e XDEBUG_MODE=coverage fpm_xdebug \
 
 ### Toggle Package from Local to Public Repository
 
-Let's say you have some local extension **"example/extension"**. Once you public it, to include one from public repository you can to do following:
+Let's say you have some local extension **"example/extension:1.0.1"**. Once you public it, to include one from public repository you can to do following:
 
 ```shell
 make bash                                             # connect to container
