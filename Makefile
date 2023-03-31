@@ -18,6 +18,7 @@ Build:                         make build\n\
 Up & Flush & Redis:            make up flush redis\n\
 \n\
 $(yellow)Management Commands:$(normal)\n\
+  prepare                      Prepare configuration files\n\
   build                        Build project\n\
   up                           Create or start containers\n\
   down                         Destroy containers\n\
@@ -63,10 +64,27 @@ endif
 
 build: env add-host composer-json composer-auth mysql-config mage-work-dir composer-install mage-install admin-user flush-all up about
 
+prepare:
+	@mkdir -p $(MAGENTO_DIR)
+	@mkdir -p $(SHARED_DIR)
+ifeq ($(wildcard .env),)
+	@cp .env.dist .env
+endif
+	@test -f deploy/auth.json || cp deploy/auth.json.sample deploy/auth.json
+	@test -f deploy/composer.json || cp deploy/composer.json.sample deploy/composer.json
+	@test -f mysql/mariadb.conf.d/my.cnf || echo "[client]\n\n\n[mysqld]" > mysql/mariadb.conf.d/my.cnf
+
+	@echo "${green}Please check files:\n\
+- .env\n\
+- deploy/auth.json\n\
+- deploy/composer.json\n\
+- mysql/mariadb.conf.d/my.cnf\
+${normal}"
+
 mage-work-dir:
 	mkdir -p $(MAGENTO_DIR)/bin
-	(test -f $(MAGENTO_DIR)/auth.json && test -f deploy/auth.json) || cp deploy/auth.json $(MAGENTO_DIR)
-	test -f $(MAGENTO_DIR)/composer.json || (test -f deploy/composer.json && cp deploy/composer.json $(MAGENTO_DIR)/composer.json)
+	test -f $(MAGENTO_DIR)/auth.json || (test -f deploy/auth.json && cp deploy/auth.json $(MAGENTO_DIR)) || true
+	test -f $(MAGENTO_DIR)/composer.json || (test -f deploy/composer.json && cp deploy/composer.json $(MAGENTO_DIR)/composer.json || true)
 	test -f $(MAGENTO_DIR)/composer.json || cp deploy/composer.json.sample $(MAGENTO_DIR)/composer.json
 	test -f $(MAGENTO_DIR)/bin/n98 || cp deploy/bin/n98 $(MAGENTO_DIR)/bin
 	test -f $(MAGENTO_DIR)/phpunit.xml.dist || cp deploy/phpunit.xml.dist $(MAGENTO_DIR)/phpunit.xml.dist
@@ -213,3 +231,5 @@ about:
 🐰 RabbitMQ:      http://$(WEB_HOST):$(EXPOSE_RABBITMQ_PORT)   {user: $(RABBITMQ_USER), pass: $(RABBITMQ_PASS)}\n\
 📦 Database:      mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@localhost:$(MYSQL_EXPOSED_PORT)\n\
 "
+
+.PHONY: help up down start stop bash env build prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-setup-configuration mage-post-install add-host flush flush-all db redis admin-user log test about
