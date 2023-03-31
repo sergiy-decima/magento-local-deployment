@@ -82,3 +82,14 @@ docker compose run --rm -e XDEBUG_MODE=coverage fpm_xdebug \
   --coverage-clover=reports/clover.coverage.xml \
   --coverage-text=reports/coverage.txt
 ```
+
+### Toggle Package from Local to Public Repository
+
+Let's say you have some local extension **"example/extension"**. Once you public it, to include one from public repository you can to do following:
+
+```shell
+make bash                                             # connect to container
+composer remove example/extension                     # remove extension
+composer config --unset repositories.dev-extensions   # remove local repository
+composer require example/extension:1.0.1              # add the extension from public
+```
