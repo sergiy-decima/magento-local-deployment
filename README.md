@@ -56,15 +56,15 @@ Just create **scripts/post-install** (see bottom) and run it ```make build```
 set -e
 
 docker compose run --rm deploy bash -c "\
-    bin/magento config:set admin/security/use_form_key 0 \
-    && bin/magento config:set admin/security/session_lifetime 7776000 \
-    && bin/magento config:set admin/security/lockout_failures 10000 \
-    && bin/magento config:set admin/security/lockout_threshold 10000 \
-    && bin/magento config:set admin/security/password_lifetime 0 \
-    && bin/magento config:set admin/security/password_is_forced 0 \
-    && bin/magento config:set admin/captcha/enable 0 \
-    && bin/magento config:set dev/grid/async_indexing 1 \
-    && bin/magento cache:enable"
+  bin/magento config:set admin/security/use_form_key 0 \
+  && bin/magento config:set admin/security/session_lifetime 7776000 \
+  && bin/magento config:set admin/security/lockout_failures 10000 \
+  && bin/magento config:set admin/security/lockout_threshold 10000 \
+  && bin/magento config:set admin/security/password_lifetime 0 \
+  && bin/magento config:set admin/security/password_is_forced 0 \
+  && bin/magento config:set admin/captcha/enable 0 \
+  && bin/magento config:set dev/grid/async_indexing 1 \
+  && bin/magento cache:enable"
 ```
 
 ### Cover Test Creation
