@@ -61,7 +61,7 @@ ifeq ($(wildcard .env),)
 endif
 	@mkdir -p $(SHARED_DIR)
 
-build: env add-host composer-json composer-auth mysql-config mage-work-dir composer-install mage-install db-config admin-user flush-all up about
+build: env add-host composer-json composer-auth mysql-config mage-work-dir composer-install mage-install admin-user flush-all up about
 
 mage-work-dir:
 	mkdir -p $(MAGENTO_DIR)/bin
@@ -100,7 +100,9 @@ mysql-config:
 composer-install:
 	docker run --rm -e "MAGENTO_ROOT=$(MAGENTO_ROOT)" -v $(shell pwd)/$(MAGENTO_DIR):$(MAGENTO_ROOT) -v $(shell pwd)/$(EXTENSIONS_DIR):/$(EXTENSIONS_DIR) -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer install --no-interaction --ansi --prefer-dist --no-suggest
 
-mage-install:
+mage-install: mage-setup-configuration mage-post-install
+
+mage-setup-configuration:
 	docker compose run --rm deploy bin/magento setup:config:set \
     --db-host=$(MYSQL_HOST) \
     --db-name=$(MYSQL_DATABASE) \
@@ -150,10 +152,10 @@ mage-install:
     --amqp-password=$(RABBITMQ_PASS) \
     --amqp-virtualhost=/
 
-add-host:
-	scripts/add-host $(WEB_HOST)
-
-db-config:
+mage-post-install:
+ifneq ($(wildcard scripts/post-install),)
+	bash scripts/post-install
+else
 	docker compose run --rm deploy bash -c "\
     bin/magento config:set admin/security/use_form_key 0 \
     && bin/magento config:set admin/security/session_lifetime 7776000 \
@@ -164,6 +166,10 @@ db-config:
     && bin/magento config:set admin/captcha/enable 0 \
     && bin/magento config:set dev/grid/async_indexing 1 \
     && bin/magento cache:enable"
+endif
+
+add-host:
+	scripts/add-host $(WEB_HOST)
 
 flush:
 	docker compose exec redis redis-cli -n $(REDIS_CACHE_BACKEND_DB) FLUSHDB
