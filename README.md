@@ -41,3 +41,21 @@ Run command to configure composer for your "extensions" folder
 ```shell
 make extensions
 ```
+
+# Examples
+
+### Cover test creation
+
+Just create **scripts/run-test** (see bottom) and run it ```make test```
+
+```shell
+#!/bin/bash
+
+set -e
+
+docker compose run --rm -e XDEBUG_MODE=coverage fpm_xdebug \
+  vendor/bin/phpunit -c phpunit.xml.dist ../extensions \
+  --coverage-html=reports/html \
+  --coverage-clover=reports/clover.coverage.xml \
+  --coverage-text=reports/coverage.txt
+```
