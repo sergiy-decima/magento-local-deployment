@@ -34,7 +34,7 @@ $(yellow)Magento Commands:$(normal)\n\
   log                          Log info tracking\n\
 \n\
 $(yellow)Commands:$(normal)\n\
-  about                        Show environment settings\n\
+  about                        Show short info about environment\n\
   extensions                   Init extension development\n\
   test                         Run custom script\n\
 "
