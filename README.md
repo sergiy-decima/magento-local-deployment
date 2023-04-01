@@ -33,7 +33,11 @@ make about
 
 **mysql/mariadb.conf.d** - mysql settings
 
-**scripts/post-install** - your custom script that sets up magento env after installation process ```make build```
+**scripts/magento/setup-config-set** - your custom script that sets up magento env ```make build```
+
+**scripts/magento/setup-install** - your custom script that sets up magento env ```make build```
+
+**scripts/magento/post-install** - your custom script that sets up magento env after installation process ```make build```
 
 **scripts/run-test** - your custom script, ```make test```
 
@@ -46,9 +50,91 @@ make extensions
 
 # Examples
 
+### Custom Magento SETUP:CONFIG:SET
+
+If you have a custom installation, you can override command ```bin/magento setup:config:set ...```
+
+Just create **scripts/magento/setup-config-set** file (see bottom) and run it ```make build```
+
+```shell
+#!/bin/bash
+
+set -e
+source .env
+
+SETUP_CONFIG_SET="bin/magento setup:config:set \
+  --db-host=$MYSQL_HOST \
+  --db-name=$MYSQL_DATABASE \
+  --db-user=$MYSQL_USER \
+  --db-password=$MYSQL_PASSWORD \
+  --session-save=redis \
+  --session-save-redis-host=$REDIS_SESSION_HOST \
+  --session-save-redis-port=$REDIS_SESSION_PORT \
+  --session-save-redis-db=$REDIS_SESSION_DB \
+  --cache-backend=redis \
+  --cache-backend-redis-server=$REDIS_CACHE_HOST \
+  --cache-backend-redis-port=$REDIS_CACHE_PORT \
+  --cache-backend-redis-db=$REDIS_CACHE_BACKEND_DB \
+  --page-cache=redis \
+  --page-cache-redis-server=$REDIS_CACHE_HOST \
+  --page-cache-redis-port=$REDIS_CACHE_PORT \
+  --page-cache-redis-db=$REDIS_CACHE_PAGE_DB \
+  --page-cache-redis-compress-data=$REDIS_COMPRESS_DATA"
+    
+echo -e "docker compose run --rm deploy $SETUP_CONFIG_SET"
+docker compose run --rm deploy bash -c "$SETUP_CONFIG_SET"
+```
+
+### Custom Magento SETUP:INSTALL
+
+If you have a custom installation, you can override command ```bin/magento setup:install ...```
+
+For example, you have custom settings of OpenSearch such as ElasticSearch.<br>
+Just create **scripts/magento/setup-install** file (see bottom) and run it ```make build```
+
+```shell
+#!/bin/bash
+
+set -e
+source .env
+
+SETUP_INSTALL="bin/magento setup:install \
+  --db-host=$MYSQL_HOST \
+  --db-name=$MYSQL_DATABASE \
+  --db-user=$MYSQL_USER \
+  --db-password=$MYSQL_PASSWORD \
+  --use-secure=0 \
+  --use-secure-admin=1 \
+  --base-url=http://$WEB_HOST/ \
+  --base-url-secure=https://$WEB_HOST/ \
+  --admin-user=$MAGENTO_ADMIN_USERNAME \
+  --admin-password=$MAGENTO_ADMIN_PASSWORD \
+  --admin-firstname=$MAGENTO_ADMIN_FIRSTNAME \
+  --admin-lastname=$MAGENTO_ADMIN_LASTNAME \
+  --admin-email=$MAGENTO_ADMIN_EMAIL \
+  --backend-frontname=$MAGENTO_BACKEND_FRONTNAME \
+  --language=$MAGENTO_LANGUAGE \
+  --currency=$MAGENTO_CURRENCY \
+  --timezone=$MAGENTO_TIMEZONE \
+  --use-rewrites=1 \
+  --search-engine=$MAGENTO_SEARCH_ENGINE \
+  --elasticsearch-host=$DC_HOSTNAME_OPENSEARCH \
+  --elasticsearch-port=$MAGENTO_OPENSEARCH_PORT \
+  --magento-init-params=MAGE_MODE=$MAGENTO_RUN_MODE \
+  --disable-modules=$MAGENTO_DISABLE_MODULES \
+  --amqp-host=$RABBITMQ_HOST \
+  --amqp-port=$RABBITMQ_PORT \
+  --amqp-user=$RABBITMQ_USER \
+  --amqp-password=$RABBITMQ_PASS \
+  --amqp-virtualhost=/"
+
+echo -e "docker compose run --rm deploy $SETUP_INSTALL"
+docker compose run --rm deploy bash -c "$SETUP_INSTALL"
+```
+
 ### Magento Post Installation
 
-Just create **scripts/post-install** (see bottom) and run it ```make build```
+Just create **scripts/magento/post-install** file (see bottom) and run it ```make build```
 
 ```shell
 #!/bin/bash
@@ -69,7 +155,7 @@ docker compose run --rm deploy bash -c "\
 
 ### Cover Test Creation
 
-Just create **scripts/run-test** (see bottom) and run it ```make test```
+Just create **scripts/run-test** file (see bottom) and run it ```make test```
 
 ```shell
 #!/bin/bash
@@ -89,7 +175,7 @@ Let's say you have some local extension **"example/extension:1.0.1"**. Once you 
 
 ```shell
 make bash                                             # connect to container
-composer remove example/extension                     # remove extension
+composer remove example/extension                     # remove extension of composer
 composer config --unset repositories.dev-extensions   # remove local repository
 composer require example/extension:1.0.1              # add the extension from public
 ```
