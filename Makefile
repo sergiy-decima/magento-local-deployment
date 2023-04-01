@@ -67,6 +67,7 @@ build: env add-host composer-json composer-auth mysql-config mage-work-dir compo
 prepare:
 	@mkdir -p $(MAGENTO_DIR)
 	@mkdir -p $(SHARED_DIR)
+	@mkdir -p scripts/magento
 ifeq ($(wildcard .env),)
 	@cp .env.dist .env
 endif
@@ -121,6 +122,9 @@ composer-install:
 mage-install: mage-setup-configuration mage-post-install
 
 mage-setup-configuration:
+ifneq ($(wildcard scripts/magento/setup-config-set),)
+	bash scripts/magento/setup-config-set
+else
 	docker compose run --rm deploy bin/magento setup:config:set \
     --db-host=$(MYSQL_HOST) \
     --db-name=$(MYSQL_DATABASE) \
@@ -139,7 +143,11 @@ mage-setup-configuration:
     --page-cache-redis-port=$(REDIS_CACHE_PORT) \
     --page-cache-redis-db=$(REDIS_CACHE_PAGE_DB) \
     --page-cache-redis-compress-data=$(REDIS_COMPRESS_DATA)
+endif
 
+ifneq ($(wildcard scripts/magento/setup-install),)
+	bash scripts/magento/setup-install
+else
 	docker compose run --rm deploy bin/magento setup:install \
     --db-host=$(MYSQL_HOST) \
     --db-name=$(MYSQL_DATABASE) \
@@ -169,10 +177,11 @@ mage-setup-configuration:
     --amqp-user=$(RABBITMQ_USER) \
     --amqp-password=$(RABBITMQ_PASS) \
     --amqp-virtualhost=/
+endif
 
 mage-post-install:
-ifneq ($(wildcard scripts/post-install),)
-	bash scripts/post-install
+ifneq ($(wildcard scripts/magento/post-install),)
+	bash scripts/magento/post-install
 else
 	docker compose run --rm deploy bash -c "\
     bin/magento config:set admin/security/use_form_key 0 \
