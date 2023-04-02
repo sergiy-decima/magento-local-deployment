@@ -33,11 +33,17 @@ make about
 
 **mysql/mariadb.conf.d** - mysql settings
 
+**scripts/magento/pre-install** - your custom script that sets up magento env before installation process ```make build```
+
 **scripts/magento/setup-config-set** - your custom script that sets up magento env ```make build```
 
 **scripts/magento/setup-install** - your custom script that sets up magento env ```make build```
 
 **scripts/magento/post-install** - your custom script that sets up magento env after installation process ```make build```
+
+**scripts/magento/front-build** - your script to build custom NodeJS frontend ```make build```, ```make front```
+
+**scripts/magento/front-start** - your script to develop custom NodeJS frontend ```make dev-front```
 
 **scripts/run-test** - your custom script, ```make test```
 
@@ -81,9 +87,10 @@ SETUP_CONFIG_SET="bin/magento setup:config:set \
   --page-cache-redis-db=$REDIS_CACHE_PAGE_DB \
   --page-cache-redis-compress-data=$REDIS_COMPRESS_DATA"
     
-echo -e "docker compose run --rm deploy $SETUP_CONFIG_SET"
+echo -e "docker compose run --rm deploy bash -c $SETUP_CONFIG_SET"
 docker compose run --rm deploy bash -c "$SETUP_CONFIG_SET"
 ```
+
 
 ### Custom Magento SETUP:INSTALL
 
@@ -128,9 +135,10 @@ SETUP_INSTALL="bin/magento setup:install \
   --amqp-password=$RABBITMQ_PASS \
   --amqp-virtualhost=/"
 
-echo -e "docker compose run --rm deploy $SETUP_INSTALL"
+echo -e "docker compose run --rm deploy bash -c  $SETUP_INSTALL"
 docker compose run --rm deploy bash -c "$SETUP_INSTALL"
 ```
+
 
 ### Magento Post Installation
 
@@ -141,7 +149,7 @@ Just create **scripts/magento/post-install** file (see bottom) and run it ```mak
 
 set -e
 
-docker compose run --rm deploy bash -c "\
+UPDATE_CONFIG="\
   bin/magento config:set admin/security/use_form_key 0 \
   && bin/magento config:set admin/security/session_lifetime 7776000 \
   && bin/magento config:set admin/security/lockout_failures 10000 \
@@ -151,7 +159,60 @@ docker compose run --rm deploy bash -c "\
   && bin/magento config:set admin/captcha/enable 0 \
   && bin/magento config:set dev/grid/async_indexing 1 \
   && bin/magento cache:enable"
+
+echo -e "docker compose run --rm deploy bash -c $UPDATE_CONFIG"
+docker compose run --rm deploy bash -c "$UPDATE_CONFIG"
 ```
+
+
+### Custom NodeJS Frontend - Build
+
+Just create **scripts/magento/front-build** file (see bottom) and run it ```make build```, ```make front```
+
+```shell
+#!/bin/bash
+
+set -e
+
+BUILD_SCANDIPWA='
+unset NPM_CONFIG_PREFIX
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | dash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nvm current
+nvm install 14.0.0
+
+(cd ./scandipwa/ && rm -rf node_modules && npm ci)
+(cd ./scandipwa/ && BUILD_MODE=magento npm run build)'
+
+echo -e "$BUILD_SCANDIPWA"
+echo -e "$BUILD_SCANDIPWA" | docker compose run -T --rm deploy
+```
+
+
+### Custom NodeJS Frontend - Development
+
+Just create **scripts/magento/front-start** file (see bottom) and run it ```make dev-front```
+
+```shell
+#!/bin/bash
+
+set -e
+
+START_SCANDIPWA='
+unset NPM_CONFIG_PREFIX
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | dash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nvm current
+nvm install 14.0.0
+
+(cd ./scandipwa/ && BUILD_MODE=magento npm run start)'
+
+echo -e "$START_SCANDIPWA"
+echo -e "$START_SCANDIPWA" | docker compose run -T --rm deploy
+```
+
 
 ### Cover Test Creation
 

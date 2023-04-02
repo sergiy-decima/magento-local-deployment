@@ -18,10 +18,10 @@ Build:                         make build\n\
 Up & Flush & Redis:            make up flush redis\n\
 \n\
 $(yellow)Management Commands:$(normal)\n\
-  prepare                      Prepare configuration files\n\
   build                        Build project\n\
   up                           Create or start containers\n\
   down                         Destroy containers\n\
+  prepare                      Prepare configuration files\n\
   start                        Start containers if they exist\n\
   stop                         Stop containers\n\
   bash                         Connect to bash\n\
@@ -30,6 +30,8 @@ $(yellow)Management Commands:$(normal)\n\
   flush                        Flushes cache, $(yellow)up->...$(normal)\n\
 \n\
 $(yellow)Magento Commands:$(normal)\n\
+  front                        Build custom NodeJS frontend\n\
+  dev-front                    Develop custom NodeJS frontend\n\
   admin-user                   Create admin user\n\
   composer-install             Composer install\n\
   log                          Log info tracking\n\
@@ -119,7 +121,12 @@ mysql-config:
 composer-install:
 	docker run --rm -e "MAGENTO_ROOT=$(MAGENTO_ROOT)" -v $(shell pwd)/$(MAGENTO_DIR):$(MAGENTO_ROOT) -v $(shell pwd)/$(EXTENSIONS_DIR):/$(EXTENSIONS_DIR) -v ~/.composer/cache:/composer/cache $(DC_IMAGE_PHP_CLI) composer install --no-interaction --ansi --prefer-dist --no-suggest
 
-mage-install: mage-setup-configuration mage-post-install
+mage-install: mage-pre-install mage-setup-configuration mage-post-install front
+
+mage-pre-install:
+ifneq ($(wildcard scripts/magento/pre-install),)
+	bash scripts/magento/pre-install
+endif
 
 mage-setup-configuration:
 ifneq ($(wildcard scripts/magento/setup-config-set),)
@@ -232,6 +239,20 @@ else
 	@echo "$(red)scripts/run-test not found. Please check file.$(normal)"
 endif
 
+front:
+ifneq ($(wildcard scripts/magento/front-build),)
+	bash scripts/magento/front-build
+else
+	@echo "If you have custom NodeJS frontend, you can create bash scenario \"scripts/magento/front-build\" to deploy it"
+endif
+
+dev-front:
+ifneq ($(wildcard scripts/magento/front-start),)
+	bash scripts/magento/front-start
+else
+	@echo "If you have custom NodeJS frontend, you can create bash scenario \"scripts/magento/front-start\" to develop it"
+endif
+
 about:
 	@echo "\n\
 🌎 Backend:       https://$(WEB_HOST)/$(MAGENTO_BACKEND_FRONTNAME)  {user: $(MAGENTO_ADMIN_USERNAME), pass: $(MAGENTO_ADMIN_PASSWORD)}\n\
@@ -241,4 +262,4 @@ about:
 📦 Database:      mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@localhost:$(MYSQL_EXPOSED_PORT)\n\
 "
 
-.PHONY: help up down start stop bash env build prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-setup-configuration mage-post-install add-host flush flush-all db redis admin-user log test about
+.PHONY: help up down start stop bash env build prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-pre-install mage-setup-configuration mage-post-install front dev-front add-host flush flush-all db redis admin-user log test about

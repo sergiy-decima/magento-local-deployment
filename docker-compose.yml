@@ -113,9 +113,10 @@ services:
     ports:
       - '${MYSQL_EXPOSED_PORT}:3306'
     volumes:
-      - 'db-data:/var/lib/mysql'
+      - './mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
       - './mysql/mariadb.conf.d:/etc/mysql/mariadb.conf.d'
       - './${SHARED_DIR}:/mnt:rw,delegated'
+      - 'db-data:/var/lib/mysql'
     healthcheck:
       test: 'mysqladmin ping -h localhost -p${MYSQL_PASSWORD}'
       interval: 30s
@@ -197,7 +198,6 @@ services:
     depends_on:
       redis:
         condition: service_started
-
 volumes:
   db-data: {  }
 networks:
