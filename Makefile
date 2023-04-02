@@ -2,11 +2,14 @@ normal := \033[0m
 yellow := \033[33m\033[1m
 green  := \033[32m\033[1m
 red    := \033[31m\033[1m
+cyan   := \033[36m\033[1m
 
 include .env.dist
 ifneq ($(wildcard .env),)
 	include .env
 endif
+
+DC_OPTIONS := $(shell echo $(DC_OPTIONS))
 
 help:
 	@echo "\n\
@@ -15,7 +18,7 @@ Usage:                         make $(yellow)<COMMANDS>$(normal)\n\
 $(green)$(MAKE_HELP_TITLE)$(normal)\n\
 \n\
 Build:                         make build\n\
-Up & Flush & Redis:            make up flush redis\n\
+Up & Flush & Front:            make up flush $(cyan)dev-front$(normal)\n\
 \n\
 $(yellow)Management Commands:$(normal)\n\
   build                        Build project\n\
@@ -30,8 +33,8 @@ $(yellow)Management Commands:$(normal)\n\
   flush                        Flushes cache, $(yellow)up->...$(normal)\n\
 \n\
 $(yellow)Magento Commands:$(normal)\n\
-  front                        Build custom NodeJS frontend\n\
-  dev-front                    Develop custom NodeJS frontend\n\
+  $(cyan)front$(normal)                        Build $(cyan)custom$(normal) NodeJS frontend\n\
+  $(cyan)dev-front$(normal)                    Develop $(cyan)custom$(normal) NodeJS frontend\n\
   admin-user                   Create admin user\n\
   composer-install             Composer install\n\
   log                          Log info tracking\n\
@@ -39,23 +42,23 @@ $(yellow)Magento Commands:$(normal)\n\
 $(yellow)Commands:$(normal)\n\
   about                        Show short info about environment\n\
   extensions                   Init extension development\n\
-  test                         Run custom script\n\
+  $(cyan)test$(normal)                         Run $(cyan)custom$(normal) script\n\
 "
 
 up: env
-	docker compose up --detach
+	docker compose $(DC_OPTIONS) up --detach
 
 down: env
-	docker compose down
+	docker compose $(DC_OPTIONS) down
 
 start:
-	docker compose start
+	docker compose $(DC_OPTIONS) start
 
 stop:
-	docker compose stop
+	docker compose $(DC_OPTIONS) stop
 
 bash: env
-	docker compose run --rm deploy bash
+	docker compose $(DC_OPTIONS) run --rm deploy bash
 
 env:
 ifeq ($(wildcard .env),)
@@ -132,7 +135,7 @@ mage-setup-configuration:
 ifneq ($(wildcard scripts/magento/setup-config-set),)
 	bash scripts/magento/setup-config-set
 else
-	docker compose run --rm deploy bin/magento setup:config:set \
+	docker compose $(DC_OPTIONS) run --rm deploy bin/magento setup:config:set \
     --db-host=$(MYSQL_HOST) \
     --db-name=$(MYSQL_DATABASE) \
     --db-user=$(MYSQL_USER) \
@@ -155,7 +158,7 @@ endif
 ifneq ($(wildcard scripts/magento/setup-install),)
 	bash scripts/magento/setup-install
 else
-	docker compose run --rm deploy bin/magento setup:install \
+	docker compose $(DC_OPTIONS) run --rm deploy bin/magento setup:install \
     --db-host=$(MYSQL_HOST) \
     --db-name=$(MYSQL_DATABASE) \
     --db-user=$(MYSQL_USER) \
@@ -190,7 +193,7 @@ mage-post-install:
 ifneq ($(wildcard scripts/magento/post-install),)
 	bash scripts/magento/post-install
 else
-	docker compose run --rm deploy bash -c "\
+	docker compose $(DC_OPTIONS) run --rm deploy bash -c "\
     bin/magento config:set admin/security/use_form_key 0 \
     && bin/magento config:set admin/security/session_lifetime 7776000 \
     && bin/magento config:set admin/security/lockout_failures 10000 \
@@ -206,22 +209,22 @@ add-host:
 	scripts/add-host $(WEB_HOST)
 
 flush:
-	docker compose exec redis redis-cli -n $(REDIS_CACHE_BACKEND_DB) FLUSHDB
-	docker compose exec redis redis-cli -n $(REDIS_CACHE_PAGE_DB) FLUSHDB
+	docker compose $(DC_OPTIONS) exec redis redis-cli -n $(REDIS_CACHE_BACKEND_DB) FLUSHDB
+	docker compose $(DC_OPTIONS) exec redis redis-cli -n $(REDIS_CACHE_PAGE_DB) FLUSHDB
 	@echo "$(green)Cache cleaned successfully$(normal)"
 
 flush-all:
-	docker compose exec redis redis-cli FLUSHALL
+	docker compose $(DC_OPTIONS) exec redis redis-cli FLUSHALL
 	@echo "$(green)Redis cleaned successfully$(normal)"
 
 db:
-	docker compose exec db sh -c 'mysql -u $(MYSQL_USER) -p$(MYSQL_PASSWORD) $(MYSQL_DATABASE)'
+	docker compose $(DC_OPTIONS) exec db sh -c 'mysql -u $(MYSQL_USER) -p$(MYSQL_PASSWORD) $(MYSQL_DATABASE)'
 
 redis:
-	docker compose exec redis redis-cli
+	docker compose $(DC_OPTIONS) exec redis redis-cli
 
 admin-user:
-	docker compose run --rm deploy bin/n98 admin:user:create \
+	docker compose $(DC_OPTIONS) run --rm deploy bin/n98 admin:user:create \
     --admin-user "$(MAGENTO_ADMIN_USERNAME)" \
     --admin-password "$(MAGENTO_ADMIN_PASSWORD)" \
     --admin-email "$(MAGENTO_ADMIN_EMAIL)" \

@@ -135,8 +135,8 @@ SETUP_INSTALL="bin/magento setup:install \
   --amqp-password=$RABBITMQ_PASS \
   --amqp-virtualhost=/"
 
-echo -e "docker compose run --rm deploy bash -c  $SETUP_INSTALL"
-docker compose run --rm deploy bash -c "$SETUP_INSTALL"
+echo -e "docker compose $DC_OPTIONS run --rm deploy $SETUP_INSTALL"
+docker compose $DC_OPTIONS run --rm deploy bash -c "$SETUP_INSTALL"
 ```
 
 
@@ -148,6 +148,7 @@ Just create **scripts/magento/post-install** file (see bottom) and run it ```mak
 #!/bin/bash
 
 set -e
+source .env
 
 UPDATE_CONFIG="\
   bin/magento config:set admin/security/use_form_key 0 \
@@ -160,8 +161,8 @@ UPDATE_CONFIG="\
   && bin/magento config:set dev/grid/async_indexing 1 \
   && bin/magento cache:enable"
 
-echo -e "docker compose run --rm deploy bash -c $UPDATE_CONFIG"
-docker compose run --rm deploy bash -c "$UPDATE_CONFIG"
+echo -e "docker compose $DC_OPTIONS run --rm deploy bash -c $UPDATE_CONFIG"
+docker compose $DC_OPTIONS run --rm deploy bash -c "$UPDATE_CONFIG"
 ```
 
 
@@ -173,6 +174,7 @@ Just create **scripts/magento/front-build** file (see bottom) and run it ```make
 #!/bin/bash
 
 set -e
+source .env
 
 BUILD_SCANDIPWA='
 unset NPM_CONFIG_PREFIX
@@ -186,7 +188,7 @@ nvm install 14.0.0
 (cd ./scandipwa/ && BUILD_MODE=magento npm run build)'
 
 echo -e "$BUILD_SCANDIPWA"
-echo -e "$BUILD_SCANDIPWA" | docker compose run -T --rm deploy
+echo -e "$BUILD_SCANDIPWA" | docker compose $DC_OPTIONS run -T --rm deploy
 ```
 
 
@@ -198,6 +200,7 @@ Just create **scripts/magento/front-start** file (see bottom) and run it ```make
 #!/bin/bash
 
 set -e
+source .env
 
 START_SCANDIPWA='
 unset NPM_CONFIG_PREFIX
@@ -210,7 +213,7 @@ nvm install 14.0.0
 (cd ./scandipwa/ && BUILD_MODE=magento npm run start)'
 
 echo -e "$START_SCANDIPWA"
-echo -e "$START_SCANDIPWA" | docker compose run -T --rm deploy
+echo -e "$START_SCANDIPWA" | docker compose $DC_OPTIONS run -T --rm deploy
 ```
 
 
