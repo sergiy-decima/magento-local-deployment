@@ -2,7 +2,7 @@ version: '3.9'
 services:
   generic:
     hostname: ${DC_HOSTNAME_GENERIC}
-    image: ${DC_IMAGE_PHP_CLI}
+    image: magento/magento-cloud-docker-php:${DC_IMAGE_PHP_CLI_VERSION}
     env_file: ${DC_ENV_FILE_PATH}
     environment:
       - 'MAGENTO_ROOT=${MAGENTO_ROOT}'
@@ -11,7 +11,7 @@ services:
       - 'SENDMAIL_PATH=/usr/local/bin/mhsendmail --smtp-addr=mailhog:1025'
   deploy:
     hostname: ${DC_HOSTNAME_DEPLOY}
-    image: ${DC_IMAGE_PHP_CLI}
+    image: magento/magento-cloud-docker-php:${DC_IMAGE_PHP_CLI_VERSION}
     extends: generic
     volumes:
       - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
@@ -33,7 +33,7 @@ services:
         condition: service_healthy
   fpm:
     hostname: ${DC_HOSTNAME_FPM}
-    image: ${DC_IMAGE_PHP_FPM}
+    image: magento/magento-cloud-docker-php:${DC_IMAGE_PHP_FPM_VERSION}
     extends: generic
     volumes:
       - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
@@ -48,7 +48,7 @@ services:
         condition: service_healthy
   fpm_xdebug:
     hostname: ${DC_HOSTNAME_FPM_XDEBUG}
-    image: ${DC_IMAGE_PHP_FPM}
+    image: magento/magento-cloud-docker-php:${DC_IMAGE_PHP_FPM_VERSION}
     extends: generic
     volumes:
       - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
@@ -65,7 +65,7 @@ services:
         condition: service_started
   web:
     hostname: ${DC_HOSTNAME_WEB}
-    image: ${DC_IMAGE_NGINX}
+    image: magento/magento-cloud-docker-nginx:${DC_IMAGE_NGINX_VERSION}
     extends: generic
     volumes:
       - './${MAGENTO_DIR}:${MAGENTO_ROOT}:delegated'
@@ -84,7 +84,7 @@ services:
         condition: service_started
   tls:
     hostname: ${DC_HOSTNAME_TLS}
-    image: ${DC_IMAGE_NGINX}
+    image: magento/magento-cloud-docker-nginx:${DC_IMAGE_NGINX_VERSION}
     extends: generic
     networks:
       magento:
@@ -103,7 +103,7 @@ services:
         condition: service_started
   db:
     hostname: ${DC_HOSTNAME_DB}
-    image: ${DC_IMAGE_MYSQL}
+    image: mariadb:${DC_IMAGE_MYSQL_VERSION}
     shm_size: 2gb
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -128,7 +128,7 @@ services:
           - ${DC_HOSTNAME_DB}
   rabbitmq:
     hostname: ${DC_HOSTNAME_RABBITMQ}
-    image: ${DC_IMAGE_RABBITMQ}
+    image: rabbitmq:${DC_IMAGE_RABBITMQ_VERSION}
     ports:
       - ${EXPOSE_RABBITMQ_PORT}:15672
     networks:
@@ -137,7 +137,7 @@ services:
           - ${DC_HOSTNAME_RABBITMQ}
   mailhog:
     hostname: ${DC_HOSTNAME_MAILHOG}
-    image: ${DC_IMAGE_MAILHOG}
+    image: magento/magento-cloud-docker-mailhog:${DC_IMAGE_MAILHOG_VERSION}
     ports:
       - '${EXPOSE_MAILHOG_SMTP_PORT}:1025'
       - '${EXPOSE_MAILHOG_WEB_PORT}:8025'
@@ -147,7 +147,7 @@ services:
           - ${DC_HOSTNAME_MAILHOG}
   opensearch:
     hostname: ${DC_HOSTNAME_OPENSEARCH}
-    image: ${DC_IMAGE_OPENSEARCH}
+    image: magento/magento-cloud-docker-opensearch:${DC_IMAGE_OPENSEARCH_VERSION}
     ulimits:
       memlock:
         soft: -1
@@ -164,7 +164,7 @@ services:
           - ${DC_HOSTNAME_OPENSEARCH}
   redis:
     hostname: ${DC_HOSTNAME_REDIS}
-    image: ${DC_IMAGE_REDIS}
+    image: redis:${DC_IMAGE_REDIS_VERSION}
     ports:
       - 6379
     sysctls:
@@ -185,7 +185,7 @@ services:
           - ${DC_HOSTNAME_REDIS}
   redis-commander:
     hostname: ${DC_HOSTNAME_REDIS_COMMANDER}
-    image: ${DC_IMAGE_REDIS_COMMANDER}
+    image: ghcr.io/joeferner/redis-commander:latest
     restart: always
     environment:
       - REDIS_HOSTS=${DC_HOSTNAME_REDIS}
