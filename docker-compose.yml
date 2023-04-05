@@ -111,7 +111,7 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     ports:
-      - '${MYSQL_EXPOSED_PORT}:3306'
+      - '${EXPOSE_MYSQL_PORT}:3306'
     volumes:
       - './mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
       - './mysql/mariadb.conf.d:/etc/mysql/mariadb.conf.d'

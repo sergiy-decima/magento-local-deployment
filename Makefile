@@ -261,7 +261,7 @@ about:
 🌎 Backend:           https://$(WEB_HOST)/$(MAGENTO_BACKEND_FRONTNAME)\n\
    ├ user             $(MAGENTO_ADMIN_USERNAME)\n\
    └ pass             $(MAGENTO_ADMIN_PASSWORD)\n\
-📦 Database:          mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@localhost:$(MYSQL_EXPOSED_PORT)\n\
+📦 Database:          mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@localhost:$(EXPOSE_MYSQL_PORT)\n\
 📧 Email:             http://$(WEB_HOST):$(EXPOSE_MAILHOG_WEB_PORT)\n\
 🐰 RabbitMQ:          http://$(WEB_HOST):$(EXPOSE_RABBITMQ_PORT)\n\
    ├ user             $(RABBITMQ_USER)\n\
