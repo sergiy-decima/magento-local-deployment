@@ -142,15 +142,15 @@ else
     --db-password=$(MYSQL_PASSWORD) \
     --session-save=redis \
     --session-save-redis-host=$(REDIS_SESSION_HOST) \
-    --session-save-redis-port=$(REDIS_SESSION_PORT) \
+    --session-save-redis-port=6379 \
     --session-save-redis-db=$(REDIS_SESSION_DB) \
     --cache-backend=redis \
     --cache-backend-redis-server=$(REDIS_CACHE_HOST) \
-    --cache-backend-redis-port=$(REDIS_CACHE_PORT) \
+    --cache-backend-redis-port=6379 \
     --cache-backend-redis-db=$(REDIS_CACHE_BACKEND_DB) \
     --page-cache=redis \
     --page-cache-redis-server=$(REDIS_CACHE_HOST) \
-    --page-cache-redis-port=$(REDIS_CACHE_PORT) \
+    --page-cache-redis-port=6379 \
     --page-cache-redis-db=$(REDIS_CACHE_PAGE_DB) \
     --page-cache-redis-compress-data=$(REDIS_COMPRESS_DATA)
 endif
@@ -258,11 +258,18 @@ endif
 
 about:
 	@echo "\n\
-🌎 Backend:       https://$(WEB_HOST)/$(MAGENTO_BACKEND_FRONTNAME)  {user: $(MAGENTO_ADMIN_USERNAME), pass: $(MAGENTO_ADMIN_PASSWORD)}\n\
-📧 Email:         http://$(WEB_HOST):$(EXPOSE_MAILHOG_WEB_PORT)\n\
-🩸 Redis:         http://$(WEB_HOST):$(EXPOSE_REDIS_COMMANDER_PORT)\n\
-🐰 RabbitMQ:      http://$(WEB_HOST):$(EXPOSE_RABBITMQ_PORT)   {user: $(RABBITMQ_USER), pass: $(RABBITMQ_PASS)}\n\
-📦 Database:      mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@localhost:$(MYSQL_EXPOSED_PORT)\n\
+🌎 Backend:           https://$(WEB_HOST)/$(MAGENTO_BACKEND_FRONTNAME)\n\
+   ├ user             $(MAGENTO_ADMIN_USERNAME)\n\
+   └ pass             $(MAGENTO_ADMIN_PASSWORD)\n\
+📦 Database:          mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@localhost:$(MYSQL_EXPOSED_PORT)\n\
+📧 Email:             http://$(WEB_HOST):$(EXPOSE_MAILHOG_WEB_PORT)\n\
+🐰 RabbitMQ:          http://$(WEB_HOST):$(EXPOSE_RABBITMQ_PORT)\n\
+   ├ user             $(RABBITMQ_USER)\n\
+   └ pass             $(RABBITMQ_PASS)\n\
+🩸 Redis:             http://$(WEB_HOST):$(EXPOSE_REDIS_COMMANDER_PORT)\n\
+   ├ cache-backend    redis://$(REDIS_CACHE_BACKEND_DB)@localhost:$(EXPOSE_REDIS_CACHE_PORT)\n\
+   ├ page-cache       redis://$(REDIS_CACHE_PAGE_DB)@localhost:$(EXPOSE_REDIS_CACHE_PORT)\n\
+   └ session          redis://$(REDIS_SESSION_DB)@localhost:$(EXPOSE_REDIS_SESSION_PORT)\n\
 "
 
 .PHONY: help up down start stop bash env build prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-pre-install mage-setup-configuration mage-post-install front dev-front add-host flush flush-all db redis admin-user log test about

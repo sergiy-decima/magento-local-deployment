@@ -130,7 +130,7 @@ services:
     hostname: ${DC_HOSTNAME_RABBITMQ}
     image: rabbitmq:${DC_IMAGE_RABBITMQ_TAG}
     ports:
-      - ${EXPOSE_RABBITMQ_PORT}:15672
+      - '${EXPOSE_RABBITMQ_PORT}:15672'
     networks:
       magento:
         aliases:
@@ -166,7 +166,7 @@ services:
     hostname: ${DC_HOSTNAME_REDIS}
     image: redis:${DC_IMAGE_REDIS_TAG}
     ports:
-      - 6379
+      - '${EXPOSE_REDIS_CACHE_PORT}:6379'
     sysctls:
       net.core.somaxconn: 1024
     ulimits:
