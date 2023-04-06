@@ -23,15 +23,16 @@ Up & Flush & Front:            make up flush $(cyan)dev-front$(normal)\n\
 $(yellow)Management Commands:$(normal)\n\
   build                        Build project\n\
   up                           Create or start containers\n\
-  down                         Destroy containers\n\
-  prepare                      Prepare configuration files\n\
+  down                         Destroy containers, cache, session\n\
   start                        Start containers if they exist\n\
   stop                         Stop containers\n\
   bash                         Connect to bash\n\
-  xdebash                      Connect to xdebug bash\n\
   db                           Connect to database, $(yellow)up->...$(normal)\n\
   redis                        Connect to redis, $(yellow)up->...$(normal)\n\
   flush                        Flushes cache, $(yellow)up->...$(normal)\n\
+  prepare                      Prepare configuration files before building\n\
+  rebuild                      Reset all data and build everything\n\
+  xdebash                      Connect to bash with xdebug\n\
 \n\
 $(yellow)Magento Commands:$(normal)\n\
   $(cyan)front$(normal)                        Build $(cyan)custom$(normal) NodeJS frontend\n\
@@ -70,6 +71,16 @@ ifeq ($(wildcard .env),)
 	@echo "${red}Please check \".env\" file. Set variables to start and try again if you are sure.${normal}" && false
 endif
 	@mkdir -p $(SHARED_DIR)
+
+rebuild: reset build
+
+reset: reset-db reset-env
+
+reset-db: down
+	docker volume rm -f $(COMPOSE_PROJECT_NAME)_db-data
+
+reset-env:
+	test -f $(MAGENTO_DIR)/app/etc/env.php && mv -f $(MAGENTO_DIR)/app/etc/env.php $(MAGENTO_DIR)/app/etc/env.old.php
 
 build: env add-host composer-json composer-auth mysql-config mage-work-dir composer-install mage-install admin-user flush-all up about
 
@@ -276,4 +287,4 @@ about:
    └ session          redis://$(REDIS_SESSION_DB)@localhost:$(EXPOSE_REDIS_SESSION_PORT)\n\
 "
 
-.PHONY: help up down start stop bash xdebash env build prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-pre-install mage-setup-configuration mage-post-install front dev-front add-host flush flush-all db redis admin-user log test about
+.PHONY: help up down start stop bash xdebash env build rebuild reset reset-db reset-env prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-pre-install mage-setup-configuration mage-post-install front dev-front add-host flush flush-all db redis admin-user log test about

@@ -29,6 +29,10 @@
             <directory>extensions/*/Test/Unit</directory>
             <directory>../extensions/*/Test/Unit</directory>
         </testsuite>
+        <testsuite name="Magento_Unit_Tests_Extensions">
+            <directory>extensions/*/Test/Unit</directory>
+            <directory>../extensions/*/Test/Unit</directory>
+        </testsuite>
         <testsuite name="Magento_Unit_Tests_App_Code_Indexer">
             <directory>app/code/*/Indexer/Test/Unit</directory>
         </testsuite>

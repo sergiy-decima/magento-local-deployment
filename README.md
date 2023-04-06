@@ -225,12 +225,15 @@ Just create **scripts/run-test** file (see bottom) and run it ```make test```
 #!/bin/bash
 
 set -e
+source .env
 
-docker compose run --rm -e XDEBUG_MODE=coverage fpm_xdebug \
-  vendor/bin/phpunit -c phpunit.xml.dist ../extensions \
+RUN_COMMAND="vendor/bin/phpunit -c phpunit.xml.dist ../extensions \
   --coverage-html=reports/html \
   --coverage-clover=reports/clover.coverage.xml \
-  --coverage-text=reports/coverage.txt
+  --coverage-text=reports/coverage.txt"
+
+echo -e "docker compose $DC_OPTIONS run --rm -e XDEBUG_MODE=coverage fpm_xdebug bash -c $RUN_COMMAND"
+docker compose $DC_OPTIONS run --rm -e XDEBUG_MODE=coverage fpm_xdebug bash -c "$RUN_COMMAND"
 ```
 
 ### Toggle Package from Local to Public Repository
