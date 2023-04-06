@@ -28,6 +28,7 @@ $(yellow)Management Commands:$(normal)\n\
   start                        Start containers if they exist\n\
   stop                         Stop containers\n\
   bash                         Connect to bash\n\
+  xdebash                      Connect to xdebug bash\n\
   db                           Connect to database, $(yellow)up->...$(normal)\n\
   redis                        Connect to redis, $(yellow)up->...$(normal)\n\
   flush                        Flushes cache, $(yellow)up->...$(normal)\n\
@@ -59,6 +60,9 @@ stop:
 
 bash: env
 	docker compose $(DC_OPTIONS) run --rm deploy bash
+
+xdebash: env
+	docker compose $(DC_OPTIONS) run --rm fpm_xdebug bash
 
 env:
 ifeq ($(wildcard .env),)
@@ -272,4 +276,4 @@ about:
    └ session          redis://$(REDIS_SESSION_DB)@localhost:$(EXPOSE_REDIS_SESSION_PORT)\n\
 "
 
-.PHONY: help up down start stop bash env build prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-pre-install mage-setup-configuration mage-post-install front dev-front add-host flush flush-all db redis admin-user log test about
+.PHONY: help up down start stop bash xdebash env build prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-pre-install mage-setup-configuration mage-post-install front dev-front add-host flush flush-all db redis admin-user log test about
