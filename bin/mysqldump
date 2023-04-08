@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -e
+
+./bin/n98 "db:dump --stdout $@"
