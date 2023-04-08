@@ -107,13 +107,13 @@ services:
     shm_size: 2gb
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
     ports:
       - '${EXPOSE_MYSQL_PORT}:3306'
     volumes:
-      - './mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
+      - './mysql/dump-for-demo:/docker-entrypoint-initdb.d'
       - './mysql/mariadb.conf.d:/etc/mysql/mariadb.conf.d'
       - './${SHARED_DIR}:/mnt:rw,delegated'
       - 'db-data:/var/lib/mysql'

@@ -1,0 +1,29 @@
+version: '3.9'
+services:
+  test-db:
+    hostname: ${DC_HOSTNAME_TEST_DB}
+    image: mariadb:${DC_IMAGE_MARIADB_TAG}
+    shm_size: 2gb
+    environment:
+      - MYSQL_ROOT_PASSWORD=${TEST_MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${TEST_MYSQL_USER}
+      - MYSQL_PASSWORD=${TEST_MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${TEST_MYSQL_DATABASE}
+    ports:
+      - '${EXPOSE_TEST_MYSQL_PORT}:3306'
+    volumes:
+      - './mysql/dump-for-test:/docker-entrypoint-initdb.d'
+      - './mysql/mariadb.conf.d:/etc/mysql/mariadb.conf.d'
+      - './${SHARED_DIR}:/mnt:rw,delegated'
+      - 'test-db-data:/var/lib/mysql'
+    healthcheck:
+      test: 'mysqladmin ping -h localhost -p${TEST_MYSQL_PASSWORD}'
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_TEST_DB}
+volumes:
+  test-db-data: {  }

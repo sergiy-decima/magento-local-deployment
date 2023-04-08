@@ -26,6 +26,7 @@ $(yellow)Management Commands:$(normal)\n\
   down                         Destroy containers, cache, session\n\
   start                        Start containers if they exist\n\
   stop                         Stop containers\n\
+  status                       Status of containers\n\
   bash                         Connect to bash\n\
   db                           Connect to database, $(yellow)up->...$(normal)\n\
   redis                        Connect to redis, $(yellow)up->...$(normal)\n\
@@ -40,6 +41,7 @@ $(yellow)Magento Commands:$(normal)\n\
   admin-user                   Create admin user\n\
   composer-install             Composer install\n\
   log                          Log info tracking\n\
+  mysqldump                    Create database dump\n\
 \n\
 $(yellow)Commands:$(normal)\n\
   about                        Show short info about environment\n\
@@ -58,6 +60,9 @@ start:
 
 stop:
 	docker compose $(DC_OPTIONS) stop
+
+status: env
+	docker compose $(DC_OPTIONS) ps
 
 bash: env
 	docker compose $(DC_OPTIONS) run --rm deploy bash
@@ -250,6 +255,11 @@ admin-user:
 log:
 	tail -f $(MAGENTO_DIR)/var/log/*.log
 
+mysqldump:
+	mkdir -p mysql/dumps
+	bin/mysqldump > mysql/dumps/magento.dump.sql
+	@echo "\n$(green)Dump was created: mysql/dumps/magento.dump.sql$(normal)\n"
+
 test:
 ifneq ($(wildcard scripts/run-test),)
 	@bash scripts/run-test || true
@@ -276,7 +286,8 @@ about:
 🌎 Backend:           https://$(WEB_HOST)/$(MAGENTO_BACKEND_FRONTNAME)\n\
    ├ user             $(MAGENTO_ADMIN_USERNAME)\n\
    └ pass             $(MAGENTO_ADMIN_PASSWORD)\n\
-📦 Database:          mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@localhost:$(EXPOSE_MYSQL_PORT)\n\
+📦 Database (demo):   mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@localhost:$(EXPOSE_MYSQL_PORT)\n\
+📦 Database (test):   mysql://$(TEST_MYSQL_USER):$(TEST_MYSQL_PASSWORD)@localhost:$(EXPOSE_TEST_MYSQL_PORT)\n\
 📧 Email:             http://$(WEB_HOST):$(EXPOSE_MAILHOG_WEB_PORT)\n\
 🐰 RabbitMQ:          http://$(WEB_HOST):$(EXPOSE_RABBITMQ_PORT)\n\
    ├ user             $(RABBITMQ_USER)\n\
@@ -287,4 +298,4 @@ about:
    └ session          redis://$(REDIS_SESSION_DB)@localhost:$(EXPOSE_REDIS_SESSION_PORT)\n\
 "
 
-.PHONY: help up down start stop bash xdebash env build rebuild reset reset-db reset-env prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-pre-install mage-setup-configuration mage-post-install front dev-front add-host flush flush-all db redis admin-user log test about
+.PHONY: help up down start stop status bash xdebash env build rebuild reset reset-db reset-env prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-pre-install mage-setup-configuration mage-post-install front dev-front add-host flush flush-all db redis admin-user log mysqldump test about
