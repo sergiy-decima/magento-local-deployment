@@ -256,9 +256,10 @@ log:
 	tail -f $(MAGENTO_DIR)/var/log/*.log
 
 mysqldump:
+	$(eval DUMP_DATE=$(shell date +'%y%m%d%H%M%S'))
 	mkdir -p mysql/dumps
-	bin/mysqldump > mysql/dumps/magento.dump.sql
-	@echo "\n$(green)Dump was created: mysql/dumps/magento.dump.sql$(normal)\n"
+	bin/mysqldump > mysql/dumps/magento.dump-$(DUMP_DATE).sql
+	@echo "\n$(green)Dump was created: mysql/dumps/magento.dump-$(DUMP_DATE).sql$(normal)\n"
 
 test:
 ifneq ($(wildcard scripts/run-test),)
