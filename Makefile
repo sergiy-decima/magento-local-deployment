@@ -93,9 +93,7 @@ prepare:
 	@mkdir -p $(MAGENTO_DIR)
 	@mkdir -p $(SHARED_DIR)
 	@mkdir -p scripts/magento
-ifeq ($(wildcard .env),)
-	@cp .env.dist .env
-endif
+	@test -f .env || cp .env.dist .env
 	@test -f deploy/auth.json || cp deploy/auth.json.sample deploy/auth.json
 	@test -f deploy/composer.json || cp deploy/composer.json.sample deploy/composer.json
 	@test -f mysql/mariadb.conf.d/my.cnf || echo "[client]\n\n\n[mysqld]" > mysql/mariadb.conf.d/my.cnf
