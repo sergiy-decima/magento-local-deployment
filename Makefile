@@ -111,7 +111,6 @@ mage-work-dir:
 	test -f $(MAGENTO_DIR)/composer.json || (test -f deploy/composer.json && cp deploy/composer.json $(MAGENTO_DIR)/composer.json || true)
 	test -f $(MAGENTO_DIR)/composer.json || cp deploy/composer.json.sample $(MAGENTO_DIR)/composer.json
 	test -f $(MAGENTO_DIR)/bin/n98 || cp deploy/bin/n98 $(MAGENTO_DIR)/bin
-	test -f $(MAGENTO_DIR)/phpunit.xml.dist || cp deploy/phpunit.xml.dist $(MAGENTO_DIR)/phpunit.xml.dist
 
 extensions: mage-work-dir
 	mkdir -p $(EXTENSIONS_DIR)
@@ -260,8 +259,11 @@ mysqldump:
 	@echo "\n$(green)Dump was created: mysql/dumps/magento.dump-$(DUMP_DATE).sql$(normal)\n"
 
 test:
+	test -f $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php || (test -f phpunit/etc/config-global.php && cp phpunit/etc/config-global.php $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php || cp phpunit/etc/config-global.php.dist $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php)
+	test -f $(MAGENTO_DIR)/dev/tests/integration/etc/install-config-mysql.php || (test -f phpunit/etc/install-config-mysql.php && cp phpunit/etc/install-config-mysql.php $(MAGENTO_DIR)/dev/tests/integration/etc/install-config-mysql.php || cp phpunit/etc/install-config-mysql.php.dist $(MAGENTO_DIR)/dev/tests/integration/etc/install-config-mysql.php)
+	test -f $(MAGENTO_DIR)/phpunit.xml.dist || cp phpunit/phpunit.xml.dist $(MAGENTO_DIR)/phpunit.xml.dist
 ifneq ($(wildcard scripts/run-test),)
-	@bash scripts/run-test || true
+	bash scripts/run-test || true
 else
 	@echo "$(red)scripts/run-test not found. Please check file.$(normal)"
 endif
