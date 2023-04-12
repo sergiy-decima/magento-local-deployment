@@ -1,5 +1,10 @@
 version: '3.9'
 services:
+  fpm_xdebug:
+    depends_on:
+      test-db:
+        condition: service_started
+
   test-db:
     hostname: ${DC_HOSTNAME_TEST_DB}
     image: mariadb:${DC_IMAGE_MARIADB_TAG}
