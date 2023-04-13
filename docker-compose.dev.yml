@@ -18,7 +18,7 @@ services:
       - '${EXPOSE_TEST_MYSQL_PORT}:3306'
     volumes:
       - './mysql/mariadb.conf.d:/etc/mysql/mariadb.conf.d'
-      - './phpunit/dump:/docker-entrypoint-initdb.d'
+      - './phpunit/dump-to-import:/docker-entrypoint-initdb.d'
       - './${SHARED_DIR}:/mnt:rw,delegated'
       - 'test-db-data:/var/lib/mysql'
     healthcheck:

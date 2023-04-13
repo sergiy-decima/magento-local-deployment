@@ -113,7 +113,7 @@ services:
     ports:
       - '${EXPOSE_MYSQL_PORT}:3306'
     volumes:
-      - './mysql/dump-for-demo:/docker-entrypoint-initdb.d'
+      - './mysql/dump-to-import:/docker-entrypoint-initdb.d'
       - './mysql/mariadb.conf.d:/etc/mysql/mariadb.conf.d'
       - './${SHARED_DIR}:/mnt:rw,delegated'
       - 'db-data:/var/lib/mysql'

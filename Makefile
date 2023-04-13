@@ -34,6 +34,8 @@ $(yellow)Management Commands:$(normal)\n\
   prepare                      Prepare configuration files before building\n\
   rebuild                      Reset all data and build everything\n\
   xdebash                      Connect to bash with xdebug\n\
+  reset-test-db                Reset test database,\n\
+                               see $(yellow)phpunit/dump-to-import/<*.sql,*.sql.gz>$(normal)\n\
 \n\
 $(yellow)Magento Commands:$(normal)\n\
   $(cyan)front$(normal)                        Build $(cyan)custom$(normal) NodeJS frontend\n\
@@ -83,6 +85,9 @@ reset: reset-db reset-env
 
 reset-db: down
 	docker volume rm -f $(COMPOSE_PROJECT_NAME)_db-data
+
+reset-test-db: down
+	docker volume rm -f $(COMPOSE_PROJECT_NAME)_test-db-data
 
 reset-env:
 	test -f $(MAGENTO_DIR)/app/etc/env.php && mv -f $(MAGENTO_DIR)/app/etc/env.php $(MAGENTO_DIR)/app/etc/env.old.php
@@ -175,6 +180,7 @@ endif
 ifneq ($(wildcard scripts/magento/setup-install),)
 	bash scripts/magento/setup-install
 else
+	@echo "These modules will be discarded during install process: $(MAGENTO_DISABLE_MODULES)"
 	docker compose $(DC_OPTIONS) run --rm deploy bin/magento setup:install \
     --db-host=$(MYSQL_HOST) \
     --db-name=$(MYSQL_DATABASE) \
@@ -284,19 +290,22 @@ endif
 
 about:
 	@echo "\n\
-🌎 Backend:           https://$(WEB_HOST)/$(MAGENTO_BACKEND_FRONTNAME)\n\
-   ├ user             $(MAGENTO_ADMIN_USERNAME)\n\
-   └ pass             $(MAGENTO_ADMIN_PASSWORD)\n\
-📦 Database (demo):   mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@localhost:$(EXPOSE_MYSQL_PORT)\n\
-📦 Database (test):   mysql://$(TEST_MYSQL_USER):$(TEST_MYSQL_PASSWORD)@localhost:$(EXPOSE_TEST_MYSQL_PORT)\n\
-📧 Email:             http://$(WEB_HOST):$(EXPOSE_MAILHOG_WEB_PORT)\n\
-🐰 RabbitMQ:          http://$(WEB_HOST):$(EXPOSE_RABBITMQ_PORT)\n\
-   ├ user             $(RABBITMQ_USER)\n\
-   └ pass             $(RABBITMQ_PASS)\n\
-🩸 Redis:             http://$(WEB_HOST):$(EXPOSE_REDIS_COMMANDER_PORT)\n\
-   ├ cache-backend    redis://$(REDIS_CACHE_BACKEND_DB)@localhost:$(EXPOSE_REDIS_CACHE_PORT)\n\
-   ├ page-cache       redis://$(REDIS_CACHE_PAGE_DB)@localhost:$(EXPOSE_REDIS_CACHE_PORT)\n\
-   └ session          redis://$(REDIS_SESSION_DB)@localhost:$(EXPOSE_REDIS_SESSION_PORT)\n\
+🌎 Backend:            https://$(WEB_HOST)/$(MAGENTO_BACKEND_FRONTNAME)\n\
+   ├ user              $(MAGENTO_ADMIN_USERNAME)\n\
+   └ pass              $(MAGENTO_ADMIN_PASSWORD)\n\
+📦 Demo Database:      mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@localhost:$(EXPOSE_MYSQL_PORT)/$(MYSQL_DATABASE)\n\
+   ├ configuration     $(yellow)mysql/mariadb.conf.d/*$(normal)\n\
+   └ dump-to-import    $(yellow)mysql/dump-to-import/<*.sql,*.sql.gz>$(normal)\n\
+📦 Test Database:      mysql://$(TEST_MYSQL_USER):$(TEST_MYSQL_PASSWORD)@localhost:$(EXPOSE_TEST_MYSQL_PORT)/$(TEST_MYSQL_DATABASE)\n\
+   └ dump-to-import    $(yellow)phpunit/dump-to-import/<*.sql,*.sql.gz>$(normal)\n\
+📧 Email:              http://$(WEB_HOST):$(EXPOSE_MAILHOG_WEB_PORT)\n\
+🐰 RabbitMQ:           http://$(WEB_HOST):$(EXPOSE_RABBITMQ_PORT)\n\
+   ├ user              $(RABBITMQ_USER)\n\
+   └ pass              $(RABBITMQ_PASS)\n\
+🩸 Redis:              http://$(WEB_HOST):$(EXPOSE_REDIS_COMMANDER_PORT)\n\
+   ├ cache-backend     redis://$(REDIS_CACHE_BACKEND_DB)@localhost:$(EXPOSE_REDIS_CACHE_PORT)\n\
+   ├ page-cache        redis://$(REDIS_CACHE_PAGE_DB)@localhost:$(EXPOSE_REDIS_CACHE_PORT)\n\
+   └ session           redis://$(REDIS_SESSION_DB)@localhost:$(EXPOSE_REDIS_SESSION_PORT)\n\
 "
 
-.PHONY: help up down start stop status bash xdebash env build rebuild reset reset-db reset-env prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-pre-install mage-setup-configuration mage-post-install front dev-front add-host flush flush-all db redis admin-user log mysqldump test about
+.PHONY: help up down start stop status bash xdebash env build rebuild reset reset-db reset-test-db reset-env prepare mage-work-dir extensions composer-json composer-auth mysql-config composer-install mage-install mage-pre-install mage-setup-configuration mage-post-install front dev-front add-host flush flush-all db redis admin-user log mysqldump test about
