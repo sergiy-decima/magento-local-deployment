@@ -261,8 +261,9 @@ log:
 mysqldump:
 	$(eval DUMP_DATE=$(shell date +'%y%m%d%H%M%S'))
 	mkdir -p mysql/dumps
-	bin/mysqldump > mysql/dumps/magento.dump-$(DUMP_DATE).sql
-	@echo "\n$(green)Dump was created: mysql/dumps/magento.dump-$(DUMP_DATE).sql$(normal)\n"
+	bin/mysqldump | gzip > mysql/dumps/magento.dump-$(DUMP_DATE).sql.gz
+	@echo "\n$(green)Dump was created: mysql/dumps/magento.dump-$(DUMP_DATE).sql.gz$(normal)"
+	@ls -lh mysql/dumps/magento.dump-$(DUMP_DATE).sql.gz && echo ""
 
 test:
 	test -f $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php || (test -f phpunit/etc/config-global.php && cp phpunit/etc/config-global.php $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php || cp phpunit/etc/config-global.php.dist $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php)
