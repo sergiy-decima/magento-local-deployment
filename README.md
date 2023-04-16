@@ -87,8 +87,9 @@ SETUP_CONFIG_SET="bin/magento setup:config:set \
   --page-cache-redis-db=$REDIS_CACHE_PAGE_DB \
   --page-cache-redis-compress-data=$REDIS_COMPRESS_DATA"
     
-echo -e "docker compose run --rm deploy bash -c $SETUP_CONFIG_SET"
-docker compose run --rm deploy bash -c "$SETUP_CONFIG_SET"
+COMMAND="docker compose run --rm deploy bash -c '$SETUP_CONFIG_SET'"
+echo -e "$COMMAND"
+eval "$COMMAND"
 ```
 
 
@@ -135,8 +136,9 @@ SETUP_INSTALL="bin/magento setup:install \
   --amqp-password=$RABBITMQ_PASS \
   --amqp-virtualhost=/"
 
-echo -e "docker compose $DC_OPTIONS run --rm deploy $SETUP_INSTALL"
-docker compose $DC_OPTIONS run --rm deploy bash -c "$SETUP_INSTALL"
+COMMAND="docker compose $DC_OPTIONS run --rm deploy bash -c '$SETUP_INSTALL'"
+echo -e "$COMMAND"
+eval "$COMMAND"
 ```
 
 
@@ -161,8 +163,9 @@ UPDATE_CONFIG="\
   && bin/magento config:set dev/grid/async_indexing 1 \
   && bin/magento cache:enable"
 
-echo -e "docker compose $DC_OPTIONS run --rm deploy bash -c $UPDATE_CONFIG"
-docker compose $DC_OPTIONS run --rm deploy bash -c "$UPDATE_CONFIG"
+COMMAND="docker compose $DC_OPTIONS run --rm deploy bash -c '$UPDATE_CONFIG'"
+echo -e "$COMMAND"
+eval "$COMMAND"
 ```
 
 
@@ -227,13 +230,17 @@ Just create **scripts/run-test** file (see bottom) and run it ```make test```
 set -e
 source .env
 
-RUN_COMMAND="vendor/bin/phpunit -c phpunit.xml.dist ../extensions \
-  --coverage-html=reports/html \
-  --coverage-clover=reports/clover.coverage.xml \
-  --coverage-text=reports/coverage.txt"
+DC_ENV_OPTIONS="-e DB_HOST=$DC_HOSTNAME_TEST_DB -e DB_USER=$TEST_MYSQL_USER -e DB_PASSWORD=$TEST_MYSQL_PASSWORD -e DB_NAME=$TEST_MYSQL_DATABASE -e OPENSEARCH_HOST=$DC_HOSTNAME_OPENSEARCH -e OPENSEARCH_PORT=$MAGENTO_OPENSEARCH_PORT -e AMQP_HOST=$DC_HOSTNAME_RABBITMQ -e AMQP_PORT=$RABBITMQ_PORT -e AMQP_USER=$RABBITMQ_USER -e AMQP_PASSWORD=$RABBITMQ_PASS"
 
-echo -e "docker compose $DC_OPTIONS run --rm -e XDEBUG_MODE=coverage fpm_xdebug bash -c $RUN_COMMAND"
-docker compose $DC_OPTIONS run --rm -e XDEBUG_MODE=coverage fpm_xdebug bash -c "$RUN_COMMAND"
+TEST_COMMAND="cd dev/tests/integration && ../../../vendor/bin/phpunit  -c phpunit.xml -vvv \
+  --testsuite=\"Magento_Tests_Extensions\" \
+  --coverage-html=../../../reports/html \
+  --coverage-clover=../../../reports/clover.coverage.xml \
+  --coverage-text=../../../reports/coverage.txt"
+
+COMMAND="docker compose $DC_OPTIONS run --rm -e XDEBUG_MODE=coverage $DC_ENV_OPTIONS fpm_xdebug bash -c '$TEST_COMMAND'"
+echo -e "\n$COMMAND\n"
+eval "$COMMAND"
 ```
 
 ### Toggle Package from Local to Public Repository
