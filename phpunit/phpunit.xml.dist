@@ -4,22 +4,22 @@
          colors="true"
          columns="max"
          beStrictAboutTestsThatDoNotTestAnything="false"
-         bootstrap="./dev/tests/integration/framework/bootstrap.php"
+         bootstrap="./framework/bootstrap.php"
          stderr="true"
          testSuiteLoaderClass="Magento\TestFramework\SuiteLoader"
          testSuiteLoaderFile="framework/Magento/TestFramework/SuiteLoader.php">
     <coverage>
         <include>
-            <!--            <directory suffix=".php">../../../app/code/*</directory>-->
-            <!--            <directory suffix=".php">../../../lib/internal/Magento</directory>-->
+<!--            <directory suffix=".php">../../../app/code/Magento</directory>-->
+<!--            <directory suffix=".php">../../../lib/internal/Magento</directory>-->
             <directory suffix=".php">../../../extensions</directory>
             <directory suffix=".php">../../../../extensions</directory>
         </include>
         <exclude>
-            <!--            <directory>../../../app/code/*/*/Test</directory>-->
-            <!--            <directory>../../../lib/internal/*/*/Test</directory>-->
-            <!--            <directory>../../../lib/internal/*/*/*/Test</directory>-->
-            <!--            <directory>../../../setup/src/*/*/Test</directory>-->
+<!--            <directory>../../../app/code/*/*/Test</directory>-->
+<!--            <directory>../../../lib/internal/*/*/Test</directory>-->
+<!--            <directory>../../../lib/internal/*/*/*/Test</directory>-->
+<!--            <directory>../../../setup/src/*/*/Test</directory>-->
             <directory>../../../extensions/*/Test</directory>
             <directory>../../../../extensions/*/Test</directory>
         </exclude>
@@ -27,24 +27,24 @@
     <!-- Test suites definition -->
     <testsuites>
         <testsuite name="Magento_Unit_Tests_App_Code">
-            <!--            <directory>../../../app/code/*/*/Test/Unit</directory>-->
-            <!--            <directory>../../../vendor/magento/module-*/Test/Unit</directory>-->
-            <!--            <exclude>../../../app/code/Magento/Indexer/Test/Unit</exclude>-->
+<!--            <directory>../../../app/code/*/*/Test/Unit</directory>-->
+<!--            <directory>../../../vendor/magento/module-*/Test/Unit</directory>-->
+<!--            <exclude>../../../app/code/Magento/Indexer/Test/Unit</exclude>-->
             <directory>../../../extensions/*/Test/Unit</directory>
             <directory>../../../../extensions/*/Test/Unit</directory>
         </testsuite>
-        <!--        <testsuite name="Magento_Unit_Tests_App_Code_Indexer">-->
-        <!--            <directory>../../../app/code/*/Indexer/Test/Unit</directory>-->
-        <!--        </testsuite>-->
-        <!--        <testsuite name="Magento_Unit_Tests_Other">-->
-        <!--            <directory>../../../lib/internal/*/*/Test/Unit</directory>-->
-        <!--            <directory>../../../lib/internal/*/*/*/Test/Unit</directory>-->
-        <!--            <directory>../../../setup/src/*/*/Test/Unit</directory>-->
-        <!--            <directory>../../../vendor/*/module-*/Test/Unit</directory>-->
-        <!--            <directory>../../../vendor/*/framework/Test/Unit</directory>-->
-        <!--            <directory>../../../vendor/*/framework/*/Test/Unit</directory>-->
-        <!--            <directory>../../../dev/tests/unit/*/Test/Unit</directory>-->
-        <!--        </testsuite>-->
+<!--        <testsuite name="Magento_Unit_Tests_App_Code_Indexer">-->
+<!--            <directory>../../../app/code/*/Indexer/Test/Unit</directory>-->
+<!--        </testsuite>-->
+<!--        <testsuite name="Magento_Unit_Tests_Other">-->
+<!--            <directory>../../../lib/internal/*/*/Test/Unit</directory>-->
+<!--            <directory>../../../lib/internal/*/*/*/Test/Unit</directory>-->
+<!--            <directory>../../../setup/src/*/*/Test/Unit</directory>-->
+<!--            <directory>../../../vendor/*/module-*/Test/Unit</directory>-->
+<!--            <directory>../../../vendor/*/framework/Test/Unit</directory>-->
+<!--            <directory>../../../vendor/*/framework/*/Test/Unit</directory>-->
+<!--            <directory>../../../dev/tests/unit/*/Test/Unit</directory>-->
+<!--        </testsuite>-->
         <testsuite name="Magento_Unit_Tests_Extensions">
             <directory>../../../extensions/*/Test/Unit</directory>
             <directory>../../../../extensions/*/Test/Unit</directory>
@@ -59,27 +59,27 @@
             <directory>../../../../extensions/*/Test/Integration</directory>
             <directory>../../../../extensions/*/Test/Unit</directory>
         </testsuite>
-        <!--        <testsuite name="Magento_Integration_Tests">-->
-        <!--            <file>testsuite/Magento/IntegrationTest.php</file>-->
-        <!--        </testsuite>-->
+<!--        <testsuite name="Magento_Integration_Tests">-->
+<!--            <file>testsuite/Magento/IntegrationTest.php</file>-->
+<!--        </testsuite>-->
         <!-- Memory tests run first to prevent influence of other tests on accuracy of memory measurements -->
-        <!--        <testsuite name="Memory_Usage_Tests">-->
-        <!--            <file>testsuite/Magento/MemoryUsageTest.php</file>-->
-        <!--        </testsuite>-->
-        <!--        <testsuite name="Magento_Integration_Tests_Real_Suite">-->
-        <!--            <directory>testsuite</directory>-->
-        <!--            <directory>../../../app/code/*/*/Test/Integration</directory>-->
-        <!--            <directory>../../../extensions/*/Test/Integration</directory>-->
-        <!--            <directory>../../../../extensions/*/Test/Integration</directory>-->
-        <!--            <exclude>testsuite/Magento/MemoryUsageTest.php</exclude>-->
-        <!--            <exclude>testsuite/Magento/IntegrationTest.php</exclude>-->
-        <!--        </testsuite>-->
+<!--        <testsuite name="Memory_Usage_Tests">-->
+<!--            <file>testsuite/Magento/MemoryUsageTest.php</file>-->
+<!--        </testsuite>-->
+<!--        <testsuite name="Magento_Integration_Tests_Real_Suite">-->
+<!--            <directory>testsuite</directory>-->
+<!--            <directory>../../../app/code/*/*/Test/Integration</directory>-->
+<!--            <exclude>testsuite/Magento/MemoryUsageTest.php</exclude>-->
+<!--            <exclude>testsuite/Magento/IntegrationTest.php</exclude>-->
+<!--            <directory>../../../extensions/*/Test/Integration</directory>-->
+<!--            <directory>../../../../extensions/*/Test/Integration</directory>-->
+<!--        </testsuite>-->
     </testsuites>
     <!-- Code coverage filters -->
     <!-- PHP INI settings and constants definition -->
     <php>
         <includePath>.</includePath>
-        <ini name="memory_limit" value="-1"/>
+        <includePath>testsuite</includePath>
         <ini name="date.timezone" value="America/Los_Angeles"/>
         <ini name="xdebug.max_nesting_level" value="200"/>
         <!-- Local XML configuration file ('.dist' extension will be added, if the specified file doesn't exist) -->
@@ -91,7 +91,7 @@
         <!-- Semicolon-separated 'glob' patterns, that match global XML configuration files -->
         <const name="TESTS_GLOBAL_CONFIG_DIR" value="../../../app/etc"/>
         <!-- Whether to cleanup the application before running tests or not -->
-        <!--        <const name="TESTS_CLEANUP" value="enabled"/>-->
+<!--        <const name="TESTS_CLEANUP" value="enabled"/>-->
         <!-- Memory usage and estimated leaks thresholds -->
         <!--<const name="TESTS_MEM_USAGE_LIMIT" value="1024M"/>-->
         <const name="TESTS_MEM_LEAK_LIMIT" value=""/>
