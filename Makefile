@@ -266,8 +266,8 @@ mysqldump:
 	@ls -lh mysql/dumps/magento.dump-$(DUMP_DATE).sql.gz && echo ""
 
 test:
-	@test -f $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php || (test -f phpunit/etc/config-global.php && cp phpunit/etc/config-global.php $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php || cp phpunit/etc/config-global.php.dist $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php)
-	@test -f $(MAGENTO_DIR)/dev/tests/integration/etc/install-config-mysql.php || (test -f phpunit/etc/install-config-mysql.php && cp phpunit/etc/install-config-mysql.php $(MAGENTO_DIR)/dev/tests/integration/etc/install-config-mysql.php || cp phpunit/etc/install-config-mysql.php.dist $(MAGENTO_DIR)/dev/tests/integration/etc/install-config-mysql.php)
+	@test -f $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php || (test -f phpunit/integration/etc/config-global.php && cp phpunit/integration/etc/config-global.php $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php || cp phpunit/integration/etc/config-global.php.dist $(MAGENTO_DIR)/dev/tests/integration/etc/config-global.php)
+	@test -f $(MAGENTO_DIR)/dev/tests/integration/etc/install-config-mysql.php || (test -f phpunit/integration/etc/install-config-mysql.php && cp phpunit/integration/etc/install-config-mysql.php $(MAGENTO_DIR)/dev/tests/integration/etc/install-config-mysql.php || cp phpunit/integration/etc/install-config-mysql.php.dist $(MAGENTO_DIR)/dev/tests/integration/etc/install-config-mysql.php)
 	@test -f $(MAGENTO_DIR)/dev/tests/integration/phpunit.xml || cp phpunit/phpunit.xml.dist $(MAGENTO_DIR)/dev/tests/integration/phpunit.xml
 ifneq ($(wildcard scripts/run-test),)
 	@bash scripts/run-test || true
