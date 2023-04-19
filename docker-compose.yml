@@ -9,6 +9,7 @@ services:
       - 'MAGENTO_RUN_MODE=${MAGENTO_RUN_MODE}'
       - 'PHP_EXTENSIONS=${PHP_EXTENSIONS}'
       - 'SENDMAIL_PATH=/usr/local/bin/mhsendmail --smtp-addr=mailhog:1025'
+
   deploy:
     hostname: ${DC_HOSTNAME_DEPLOY}
     image: magento/magento-cloud-docker-php:${DC_IMAGE_PHP_CLI_TAG}
@@ -31,6 +32,7 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
+
   fpm:
     hostname: ${DC_HOSTNAME_FPM}
     image: magento/magento-cloud-docker-php:${DC_IMAGE_PHP_FPM_TAG}
@@ -46,6 +48,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
   fpm_xdebug:
     hostname: ${DC_HOSTNAME_FPM_XDEBUG}
     image: magento/magento-cloud-docker-php:${DC_IMAGE_PHP_FPM_TAG}
@@ -63,6 +66,7 @@ services:
     depends_on:
       db:
         condition: service_started
+
   web:
     hostname: ${DC_HOSTNAME_WEB}
     image: magento/magento-cloud-docker-nginx:${DC_IMAGE_NGINX_TAG}
@@ -82,6 +86,7 @@ services:
     depends_on:
       fpm:
         condition: service_started
+
   tls:
     hostname: ${DC_HOSTNAME_TLS}
     image: magento/magento-cloud-docker-nginx:${DC_IMAGE_NGINX_TAG}
@@ -101,6 +106,7 @@ services:
     depends_on:
       web:
         condition: service_started
+
   db:
     hostname: ${DC_HOSTNAME_DB}
     image: mariadb:${DC_IMAGE_MARIADB_TAG}
@@ -126,6 +132,7 @@ services:
       magento:
         aliases:
           - ${DC_HOSTNAME_DB}
+
   rabbitmq:
     hostname: ${DC_HOSTNAME_RABBITMQ}
     image: rabbitmq:${DC_IMAGE_RABBITMQ_TAG}
@@ -135,6 +142,7 @@ services:
       magento:
         aliases:
           - ${DC_HOSTNAME_RABBITMQ}
+
   mailhog:
     hostname: ${DC_HOSTNAME_MAILHOG}
     image: magento/magento-cloud-docker-mailhog:${DC_IMAGE_MAILHOG_TAG}
@@ -145,6 +153,7 @@ services:
       magento:
         aliases:
           - ${DC_HOSTNAME_MAILHOG}
+
   opensearch:
     hostname: ${DC_HOSTNAME_OPENSEARCH}
     image: magento/magento-cloud-docker-opensearch:${DC_IMAGE_OPENSEARCH_TAG}
@@ -158,10 +167,13 @@ services:
       - discovery.seed_hosts=opensearch
       - bootstrap.memory_lock=true
       - DISABLE_SECURITY_PLUGIN=true
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
     networks:
       magento:
         aliases:
           - ${DC_HOSTNAME_OPENSEARCH}
+
   redis:
     hostname: ${DC_HOSTNAME_REDIS}
     image: redis:${DC_IMAGE_REDIS_TAG}
@@ -183,6 +195,7 @@ services:
       magento:
         aliases:
           - ${DC_HOSTNAME_REDIS}
+
   redis-commander:
     hostname: ${DC_HOSTNAME_REDIS_COMMANDER}
     image: ghcr.io/joeferner/redis-commander:latest
@@ -198,8 +211,11 @@ services:
     depends_on:
       redis:
         condition: service_started
+
 volumes:
   db-data: {  }
+  opensearch-data: {  }
+
 networks:
   magento:
     driver: bridge
