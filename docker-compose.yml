@@ -199,7 +199,6 @@ services:
   redis-commander:
     hostname: ${DC_HOSTNAME_REDIS_COMMANDER}
     image: ghcr.io/joeferner/redis-commander:latest
-    restart: always
     environment:
       - REDIS_HOSTS=${DC_HOSTNAME_REDIS}
     ports:
