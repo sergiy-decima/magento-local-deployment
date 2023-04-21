@@ -3,4 +3,7 @@
 set -e
 source .env
 
-docker run --rm -e "MAGENTO_ROOT=$MAGENTO_ROOT" -v $PWD/$MAGENTO_DIR:$MAGENTO_ROOT -v $PWD/$EXTENSIONS_DIR:/$EXTENSIONS_DIR -v ~/.composer/cache:/composer/cache magento/magento-cloud-docker-php:$DC_IMAGE_PHP_CLI_TAG composer "$@"
+COMMAND="docker run --rm -e 'MAGENTO_ROOT=$MAGENTO_ROOT' -v $PWD/$MAGENTO_DIR:$MAGENTO_ROOT -v $PWD/$EXTENSIONS_DIR:/$EXTENSIONS_DIR -v ~/.composer/cache:/composer/cache magento/magento-cloud-docker-php:$DC_IMAGE_PHP_CLI_TAG composer $@"
+
+echo -e "$COMMAND"
+eval "$COMMAND"

@@ -232,14 +232,15 @@ source .env
 
 DC_ENV_OPTIONS="-e DB_HOST=$DC_HOSTNAME_TEST_DB -e DB_USER=$TEST_MYSQL_USER -e DB_PASSWORD=$TEST_MYSQL_PASSWORD -e DB_NAME=$TEST_MYSQL_DATABASE -e OPENSEARCH_HOST=$DC_HOSTNAME_OPENSEARCH -e OPENSEARCH_PORT=$MAGENTO_OPENSEARCH_PORT -e AMQP_HOST=$DC_HOSTNAME_RABBITMQ -e AMQP_PORT=$RABBITMQ_PORT -e AMQP_USER=$RABBITMQ_USER -e AMQP_PASSWORD=$RABBITMQ_PASS"
 
-TEST_COMMAND="cd dev/tests/integration && ../../../vendor/bin/phpunit  -c phpunit.xml -vvv \
-  --testsuite=\"Magento_Tests_Extensions\" \
+TEST_COMMAND="cd dev/tests/integration && ../../../vendor/bin/phpunit -vvv \
+  --configuration=phpunit.xml \
+  --testsuite='Magento_Tests_Extensions' \
   --coverage-html=../../../reports/html \
   --coverage-clover=../../../reports/clover.coverage.xml \
   --coverage-text=../../../reports/coverage.txt"
 
-COMMAND="docker compose $DC_OPTIONS run --rm -e XDEBUG_MODE=coverage $DC_ENV_OPTIONS fpm_xdebug bash -c '$TEST_COMMAND'"
-echo -e "\n$COMMAND\n"
+COMMAND="docker compose $DC_OPTIONS run --rm -e 'PHP_EXTENSIONS=$PHP_EXTENSIONS xdebug' -e XDEBUG_MODE=coverage $DC_ENV_OPTIONS deploy bash -c '$TEST_COMMAND'"
+echo -e "$COMMAND"
 eval "$COMMAND"
 ```
 

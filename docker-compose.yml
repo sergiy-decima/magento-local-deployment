@@ -32,6 +32,8 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
+      test-db:
+        condition: service_healthy
 
   fpm:
     hostname: ${DC_HOSTNAME_FPM}
@@ -196,6 +198,32 @@ services:
         aliases:
           - ${DC_HOSTNAME_REDIS}
 
+  test-db:
+    hostname: ${DC_HOSTNAME_TEST_DB}
+    image: mariadb:${DC_IMAGE_MARIADB_TAG}
+    shm_size: 2gb
+    environment:
+      - MYSQL_ROOT_PASSWORD=${TEST_MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${TEST_MYSQL_USER}
+      - MYSQL_PASSWORD=${TEST_MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${TEST_MYSQL_DATABASE}
+    ports:
+      - '${EXPOSE_TEST_MYSQL_PORT}:3306'
+    volumes:
+      - './mysql/mariadb.conf.d:/etc/mysql/mariadb.conf.d'
+      - './phpunit/dump-to-import:/docker-entrypoint-initdb.d'
+      - './${SHARED_DIR}:/mnt:rw,delegated'
+      - 'test-db-data:/var/lib/mysql'
+    healthcheck:
+      test: 'mysqladmin ping -h localhost -p${TEST_MYSQL_PASSWORD}'
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      magento:
+        aliases:
+          - ${DC_HOSTNAME_TEST_DB}
+
   redis-commander:
     hostname: ${DC_HOSTNAME_REDIS_COMMANDER}
     image: ghcr.io/joeferner/redis-commander:latest
@@ -213,6 +241,7 @@ services:
 
 volumes:
   db-data: {  }
+  test-db-data: {  }
   opensearch-data: {  }
 
 networks:
